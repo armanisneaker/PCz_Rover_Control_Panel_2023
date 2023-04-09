@@ -14,6 +14,13 @@ public:
 
     QByteArray frame;
 
+    int16_t getLeftSpeed() const;
+    int16_t getRightSpeed() const;
+
+    int containerX;
+    int containerY;
+    int containerPower;
+
 private:
     const int MAX_SPEED = 3200;
     const int MAX_JOYSTICK_VALUE = 32767;
@@ -26,17 +33,11 @@ private:
     int16_t leftSpeed;
     int16_t rightSpeed;
 
-public:
-    Drive();
-
-    int16_t getLeftSpeed() const;
-    int16_t getRightSpeed() const;
 public slots:
-    QByteArray calculateWheelsSpeeds(int x, int y, int power);
+    bool calculateWheelsSpeeds(const int x, const int y, const int power);
 signals:
     void controlVirtualJoystick();
-    void controlPhysicalJoystick1();
-    void controlPhysicalJoystick2();
+    void controlPhysicalJoystick();
 
 };
 

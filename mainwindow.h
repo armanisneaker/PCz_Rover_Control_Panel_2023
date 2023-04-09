@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QElapsedTimer>
 #include <vector>
+#include "arm.h"
 #include "connection.h"
 #include "drive.h"
 #include "joystickwidget.h"
@@ -26,10 +27,12 @@ private:
 
     Connection* connection;
     Drive* drive;
+    Arm* arm;
     JoystickWidget* joystickWidget;
     std::vector<Joystick> joystickPhysical;
 
     QTimer *connectionTimer;
+    QTimer *armTimer;
     QTimer *driveTimer;
     QTimer *uiTimer;
     QTimer* frameStatusTimer;
@@ -39,6 +42,7 @@ private:
     int timeSinceLastFrameSent;
 
     QMetaObject::Connection connConnectionTimer;
+    QMetaObject::Connection connArmTimer;
     QMetaObject::Connection connDriveTimer;
     QMetaObject::Connection connJoystickPhysicalTimer;
     QMetaObject::Connection connDriveControlVirtual;
@@ -53,5 +57,11 @@ private:
 private slots:
     void updateFrameStatusLabel();
     void on_comboBox_drive_control_currentTextChanged(const QString &arg1);
+    void on_comboBox_arm_control_currentTextChanged(const QString &arg1);
+    void on_horizontalSlider_x_arm_sliderReleased();
+    void on_horizontalSlider_y_arm_sliderReleased();
+    void on_horizontalSlider_z_arm_sliderReleased();
+    void on_horizontalSlider_x_drive_sliderReleased();
+    void on_horizontalSlider_y_drive_sliderReleased();
 };
 #endif // MAINWINDOW_H

@@ -19,7 +19,7 @@ Connection::~Connection()
 
 }
 
-Q_INVOKABLE bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& frameArm)
+bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& frameArm)
 {
     // Check that the frame has enough space to accommodate the drive and arm frames
     if (frame.size() < 67 + frameArm.size())
@@ -44,7 +44,7 @@ bool Connection::sendFrame()
 
     if(bytesSentInLastFrame == 320)
     {
-        qDebug() << "Frame successfully sent to"<< hostAdress << hostPort << ".";
+        //qDebug() << "Frame successfully sent to"<< hostAdress << hostPort << ".";
         framesSent++;
         emit frameSent();
         return true;

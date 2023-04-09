@@ -20,6 +20,8 @@ set(PROJECT_SOURCES
         mainwindow.ui
         connection.h
         connection.cpp
+        arm.h
+        arm.cpp
         drive.h
         drive.cpp
         joystickwidget.h

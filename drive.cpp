@@ -2,17 +2,17 @@
 
 Drive::Drive(QObject *parent) : QObject(parent)
 {
-
+    frame.QByteArray::clear();
 }
 
-QByteArray Drive::calculateWheelsSpeeds(int x, int y, int power)
+bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
 {
-
+    frame.QByteArray::clear();
     // Calculate the normalized joystick values within the deadzone
     normX = qBound(-1.0, (double)x / MAX_JOYSTICK_VALUE, 1.0);
     normY = qBound(-1.0, (double)y / MAX_JOYSTICK_VALUE, 1.0);
-    qDebug()<<normX<<normY;
-    if (qAbs(x) < DEADZONE / MAX_JOYSTICK_VALUE && qAbs(y) < DEADZONE ) {
+    //qDebug()<<normX<<normY;
+    if (qAbs(x) < DEADZONE && qAbs(y) < DEADZONE ) {
         // If the joystick values are within the deadzone, set the wheel speeds to 0
         leftSpeed = 3200;
         rightSpeed = 3200;
@@ -31,9 +31,9 @@ QByteArray Drive::calculateWheelsSpeeds(int x, int y, int power)
     stream << (qint16)rightSpeed << (qint16)rightSpeed << (qint16)rightSpeed
            << (qint16)leftSpeed << (qint16)leftSpeed << (qint16)leftSpeed;
 
-    qDebug() << leftSpeed << rightSpeed;
+    //qDebug() << leftSpeed << rightSpeed;
 
-    return frame;
+    return true;
 }
 
 int16_t Drive::getLeftSpeed() const
