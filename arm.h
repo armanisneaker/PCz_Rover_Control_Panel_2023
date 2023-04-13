@@ -17,21 +17,33 @@ public:
 
     enum ButtonFunction
     {
-        none,
-        first,
-        second,
-        third,
-        jaws,
-        all,
-        inverseKinematics
+        none = 0,
+        first = 1,
+        second = 2,
+        third = 3,
+        jaws = 4,
+        all = 5,
+        inverseKinematics = 6
     };
 
+
+    void printButtonFunction(ButtonFunction buttonFunction);
     int containerX;
     int containerY;
     int containerZ;
     int containerPower;
-    ButtonFunction buttonFunction;
+    ButtonFunction activeButtonFunction;
     int buttonPressed;
+
+    struct ButtonFunctionKey
+    {
+        ButtonFunction function;
+        bool isActive;
+
+        ButtonFunctionKey() : function(Arm::none), isActive(false){}
+    };
+
+    ButtonFunctionKey buttonFunctionKeys[6];
 
     bool calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed);
 

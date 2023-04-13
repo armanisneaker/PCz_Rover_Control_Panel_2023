@@ -3,6 +3,12 @@
 Arm::Arm(QObject *parent) : QObject(parent)
 {
     frame.QByteArray::clear();
+    containerX = 0;
+    containerY = 0;
+    containerZ = 0;
+    containerPower = 0;
+    activeButtonFunction = ButtonFunction::none;
+    buttonPressed = 120;
 }
 
 bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed)
@@ -126,3 +132,36 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
 
     return true;
 }
+
+void Arm::printButtonFunction(ButtonFunction buttonFunction)
+{
+    switch(buttonFunction)
+    {
+        case none:
+            qDebug() << "Button function: none";
+            break;
+        case first:
+            qDebug() << "Button function: first";
+            break;
+        case second:
+            qDebug() << "Button function: second";
+            break;
+        case third:
+            qDebug() << "Button function: third";
+            break;
+        case jaws:
+            qDebug() << "Button function: jaws";
+            break;
+        case all:
+            qDebug() << "Button function: all";
+            break;
+        case inverseKinematics:
+            qDebug() << "Button function: inverseKinematics";
+            break;
+        default:
+            qDebug() << "Unknown button function";
+            break;
+    }
+}
+
+

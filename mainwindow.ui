@@ -618,6 +618,9 @@ QSlider
      <property name="text">
       <string>1</string>
      </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="pushButton_button_function_arm_2">
      <property name="geometry">

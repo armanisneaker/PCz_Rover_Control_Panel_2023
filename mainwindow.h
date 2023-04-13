@@ -9,6 +9,7 @@
 #include "drive.h"
 #include "joystickwidget.h"
 #include "joystickdirectinput.h"
+#include "ui_mainwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,6 +22,10 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    void updateButtonFunctionColors();
+
+
 
 private:
     Ui::MainWindow *ui;
