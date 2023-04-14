@@ -5,6 +5,9 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 {
     ui->setupUi(this);
     this->setFixedSize(1280, 720);
+    setWindowTitle("PCz Rover Control Panel 2023");
+
+    //emit drive->controlVirtualJoystick();
 
     //class' initialization ======================================================================================================================================================================================
     connection = new Connection(this);
@@ -12,6 +15,12 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     drive = new Drive(this);
     joystickWidget = new JoystickWidget(this);
     joystickWidget->setGeometry(326, 150, 250, 250);
+    joystick = new DirectInputJoystick(this);
+
+    connect(joystick, &DirectInputJoystick::connectedJoystickCountChanged, [this](int count) {
+            ui->label_joysticks_count->setText(QString::number(count));
+        });
+
 
     //timers initializations ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     uiTimer = new QTimer(this);
@@ -38,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         {
             if(arm->buttonFunctionKeys[i].isActive == true) arm->activeButtonFunction = arm->buttonFunctionKeys[i].function;
         }
-        arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, 120);
+        arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, -1);
         //qDebug() <<arm->containerX<<arm->containerX/16383.0f;
         //arm->printButtonFunction(arm->activeButtonFunction);
         //arm->printButtonFunction(arm->buttonFunctionKeys[0].function);
@@ -46,92 +55,84 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     };
 
     auto armPhysicalLambda = [this]() {
-        arm->calculateSegmentsSpeeds(0, 0, 0, 0, Arm::none, 120);
-        updateUI(0, 0, 0, 0);
-
-        for (int joystickNumber = 0; joystickNumber < numJoysticks; joystickNumber++) {
-            if (ui->comboBox_arm_control->currentIndex() == joystickNumber + 1) {
-                processJoystickState(joystickNumber, arm);
-            }
-        }
+        arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, arm->buttonPressed);
+        updateUI(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
+        //qDebug() << arm->containerX << arm->containerY << arm->containerZ << arm->containerPower;
     };
 
-
-    auto driveVirtualLambda =[this]()
+    auto driveLambda =[this]()
     {
-        drive->calculateWheelsSpeeds(joystickWidget->x() *16383, joystickWidget->y() *16383, ui->horizontalSlider_power_drive->value());
-        //qDebug() <<joystickWidget->x()*16383 << joystickWidget->y()*16383 << ui->horizontalSlider_power_drive->value();
-    };
-
-    auto drivePhysicalLambda =[this]()
-    {
-        drive->calculateWheelsSpeeds(0, 0, 0);
-        ui->horizontalSlider_power_drive->setValue(0);
-        ui->horizontalSlider_x_drive->setValue(0);
-        ui->horizontalSlider_y_drive->setValue(0);
-        for (joystickNumber = 0; joystickNumber < numJoysticks; joystickNumber++)
-        {
-            if (ui->comboBox_drive_control->currentIndex() == joystickNumber + 1)
-            {
-                drive->containerX = (joystickState[joystickNumber].lX - physicalJoystickMaxValue / 2) / 2;
-                drive->containerY = ((joystickState[joystickNumber].lY - physicalJoystickMaxValue / 2) / 2) *-1;
-                drive->containerPower = ((joystickState[joystickNumber].rglSlider[0] / physicalJoystickMaxValue) *100 - 100) *-1;
-                joystickPhysical[joystickNumber].poll(&joystickState[joystickNumber]);
-                drive->calculateWheelsSpeeds(drive->containerX, drive->containerY, drive->containerPower);
-
-                ui->horizontalSlider_x_drive->setValue(drive->containerX / 163.830);
-                ui->horizontalSlider_y_drive->setValue(drive->containerY / 163.830);
-                ui->horizontalSlider_power_drive->setValue(drive->containerPower);
-                //qDebug() <<drive->containerX<<drive->containerX/16383.0f;
-            }
-        }
+        drive->calculateWheelsSpeeds(drive->containerX, physicalJoystickMaxValue - drive->containerY, drive->containerPower);
     };
 
     auto armControlVirtualLambda =[=]()
     {
         disconnect(connArmTimer);
+        disconnect(connArmPhysicalX);
+        disconnect(connArmPhysicalY);
+        disconnect(connArmPhysicalZ);
         connArmTimer = connect(armTimer, &QTimer::timeout, arm, armVirtualLambda);
     };
 
-    auto armControlPhysicalLambda =[=]()
+    auto armControlPhysical1Lambda =[=]()
     {
         disconnect(connArmTimer);
+        disconnect(connArmPhysicalX);
+        disconnect(connArmPhysicalY);
+        disconnect(connArmPhysicalZ);
         connArmTimer = connect(armTimer, &QTimer::timeout, arm, armPhysicalLambda);
+        connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, [this](int value) { arm->containerX = value;});
+        connArmPhysicalY = connect(joystick, &DirectInputJoystick::joystick1AxisYChanged, [this](int value) { arm->containerY = value;});
+        connArmPhysicalZ = connect(joystick, &DirectInputJoystick::joystick1AxisZChanged, [this](int value) { arm->containerZ = value;});
+        connArmPhysicalPower = connect(joystick, &DirectInputJoystick::joystick1SliderChanged, [this](int value) { arm->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1;});
+    };
+
+    auto armControlPhysical2Lambda =[=]()
+    {
+        disconnect(connArmTimer);
+        disconnect(connArmPhysicalX);
+        disconnect(connArmPhysicalY);
+        disconnect(connArmPhysicalZ);
+        connArmTimer = connect(armTimer, &QTimer::timeout, arm, armPhysicalLambda);
+        connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, [this](int value) { arm->containerX = value;});
+        connArmPhysicalY = connect(joystick, &DirectInputJoystick::joystick2AxisYChanged, [this](int value) { arm->containerY = value;});
+        connArmPhysicalZ = connect(joystick, &DirectInputJoystick::joystick2AxisZChanged, [this](int value) { arm->containerZ = value;});
+        connArmPhysicalPower = connect(joystick, &DirectInputJoystick::joystick2SliderChanged, [this](int value) { arm->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1;});
     };
 
     auto driveControlVirtualLambda =[=]()
     {
-        disconnect(connDriveTimer);
-        connDriveTimer = connect(driveTimer, &QTimer::timeout, drive, driveVirtualLambda);
+        disconnect(connDrivePhysicalX);
+        disconnect(connDrivePhysicalY);
+        disconnect(connDrivePhysicalPower);
+
+        connDrivePhysicalX = connect(joystickWidget, &JoystickWidget::xChanged, [this](float value) { drive->containerX = (value+1.0)*32767; qDebug() <<value;  });
+        connDrivePhysicalY = connect(joystickWidget, &JoystickWidget::yChanged, [this](float value) { drive->containerY = 65535 - (value+1.0)*32767;  });
+        connDrivePhysicalPower = connect(ui->horizontalSlider_power_drive, &QSlider::valueChanged,[this](int value) { drive->containerPower = value;  });
     };
 
-    auto driveControlPhysicalLambda =[=]()
-    {
-        disconnect(connDriveTimer);
-        connDriveTimer = connect(driveTimer, &QTimer::timeout, drive, drivePhysicalLambda);
-    };
-
-    auto manageJoysticksPhysicalLambda =[this]()
-    {
-        numJoysticks = Joystick::deviceCount();
-        ui->label_joysticks_count->setText(QString::number(numJoysticks));
-
-        if (numJoysticks != joystickPhysical.size())
+ auto driveControlPhysical1Lambda = [=]()
         {
-            for (Joystick &joystick: joystickPhysical)
-            {
-                joystick.close();
-            }
+            disconnect(connDrivePhysicalX);
+            disconnect(connDrivePhysicalY);
+            disconnect(connDrivePhysicalPower);
+            connDrivePhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, [this](int value) { drive->containerX = value;  });
+            connDrivePhysicalY = connect(joystick, &DirectInputJoystick::joystick1AxisYChanged, [this](int value) { drive->containerY = value; });
+            connDrivePhysicalPower = connect(joystick, &DirectInputJoystick::joystick1SliderChanged, [this](int value) { drive->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1; });
+        };
 
-            joystickPhysical.clear();
-            joystickPhysical.reserve(numJoysticks);
-            for (int i = 0; i < numJoysticks; i++)
-            {
-                joystickPhysical.emplace_back(i);
-                joystickPhysical[i].open();
-            }
-        }
+
+    auto driveControlPhysical2Lambda =[=]()
+    {
+        disconnect(connDrivePhysicalX);
+        disconnect(connDrivePhysicalY);
+        disconnect(connDrivePhysicalPower);
+        connDrivePhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, [this](int value) { drive->containerX = value; });
+        connDrivePhysicalY = connect(joystick, &DirectInputJoystick::joystick2AxisYChanged, [this](int value) { drive->containerY = value; });
+        connDrivePhysicalPower = connect(joystick, &DirectInputJoystick::joystick2SliderChanged, [this](int value) { drive->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1; });
+
     };
+
 
     auto handleButtonFunction = [this](int buttonNumber)
     {
@@ -185,12 +186,14 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 //BUSINESS ======================================================================================================================================================================================
 connect(connectionTimer, &QTimer::timeout, connection, connectionLambda);
 
+connect(driveTimer, &QTimer::timeout, drive, driveLambda);
+
 //Drive with widgets------------------------------------------------------------------------------------------------------------------------------------------------------------------
-connDriveTimer = connect(driveTimer, &QTimer::timeout, drive, driveVirtualLambda);
 connect(drive, &Drive::controlVirtualJoystick, drive, driveControlVirtualLambda);
 
 //Drive with joystick------------------------------------------------------------------------------------------------------------------------------------------------------------------
-connect(drive, &Drive::controlPhysicalJoystick, drive, driveControlPhysicalLambda);
+connect(drive, &Drive::controlPhysicalJoystick1, drive, driveControlPhysical1Lambda);
+connect(drive, &Drive::controlPhysicalJoystick2, drive, driveControlPhysical2Lambda);
 
 //Arm with widgets------------------------------------------------------------------------------------------------------------------------------------------------------------------
 connArmTimer = connect(armTimer, &QTimer::timeout, arm, armVirtualLambda);
@@ -221,10 +224,8 @@ connect(ui->pushButton_button_function_arm_6, &QPushButton::clicked, [this, hand
     handleButtonFunction(6);
     });
 //Arm with joystick------------------------------------------------------------------------------------------------------------------------------------------------------------------
-connect(arm, &Arm::controlPhysicalJoystick, arm, armControlPhysicalLambda);
-
-//Joysticks management------------------------------------------------------------------------------------------------------------------------------------------------------------------
-connJoystickPhysicalTimer = connect(joystickPhysicalTimer, &QTimer::timeout, manageJoysticksPhysicalLambda);
+connect(arm, &Arm::controlPhysicalJoystick1, arm, armControlPhysical1Lambda);
+connect(arm, &Arm::controlPhysicalJoystick2, arm, armControlPhysical2Lambda);
 
 connect(frameStatusTimer, &QTimer::timeout, this, &MainWindow::updateFrameStatusLabel);
 connect(connection, &Connection::frameSent, this,
@@ -253,6 +254,7 @@ connect(uiTimer, &QTimer::timeout, this, [=]()
     setButtonFunction(ui->comboBox_arm_5, arm->buttonFunctionKeys[4]);
     setButtonFunction(ui->comboBox_arm_6, arm->buttonFunctionKeys[5]);
     updateButtonFunctionColors();
+
 
     });
 //UI INITIALIZATION======================================================================================================================================================================================
@@ -321,6 +323,8 @@ connect(connection, &Connection::frameSent, this,
     });
 }
 
+
+
 MainWindow::~MainWindow()
 {
     delete connectionTimer;
@@ -356,13 +360,15 @@ void MainWindow::updateFrameStatusLabel()
 void MainWindow::on_comboBox_drive_control_currentTextChanged(const QString &arg1)
 {
     if (arg1 == "Virtual Joystick") emit drive->controlVirtualJoystick();
-    else if (arg1 == "Physical Joystick 1" || arg1 == "Physical Joystick 2") emit drive->controlPhysicalJoystick();
+    else if (arg1 == "Physical Joystick 1") emit drive->controlPhysicalJoystick1();
+    else if (arg1 == "Physical Joystick 2") emit drive->controlPhysicalJoystick2();
 }
 
 void MainWindow::on_comboBox_arm_control_currentTextChanged(const QString &arg1)
 {
     if (arg1 == "Virtual Sliders") emit arm->controlVirtualSliders();
-    else if (arg1 == "Physical Joystick 1" || arg1 == "Physical Joystick 2") emit arm->controlPhysicalJoystick();
+    else if (arg1 == "Physical Joystick 1") emit arm->controlPhysicalJoystick1();
+    else if (arg1 == "Physical Joystick 2") emit arm->controlPhysicalJoystick2();
 }
 
 void MainWindow::on_horizontalSlider_x_arm_sliderReleased()
@@ -473,7 +479,7 @@ void MainWindow::processJoystickState(int joystickNumber, Arm* arm) {
     arm->containerY = 65534 - joystickState[joystickNumber].lY;
     arm->containerZ = joystickState[joystickNumber].lRz;
     arm->containerPower = ((joystickState[joystickNumber].rglSlider[0] / physicalJoystickMaxValue) * 100 - 100) * -1;
-    joystickPhysical[joystickNumber].poll(&joystickState[joystickNumber]);
+
     arm->buttonPressed = -1;
 
     for (int buttonPressedNow = 0; buttonPressedNow < 20; buttonPressedNow++) {

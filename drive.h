@@ -37,7 +37,8 @@ public slots:
     bool calculateWheelsSpeeds(const int x, const int y, const int power);
 signals:
     void controlVirtualJoystick();
-    void controlPhysicalJoystick();
+    void controlPhysicalJoystick1();
+    void controlPhysicalJoystick2();
 
 };
 

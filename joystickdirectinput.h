@@ -1,44 +1,53 @@
-#ifndef __JOYSTICK_H__
-#define __JOYSTICK_H__
+// DirectInputJoystick.h
 
-#pragma once
+#ifndef DIRECTINPUTJOYSTICK_H
+#define DIRECTINPUTJOYSTICK_H
 
 #include <QObject>
-#include <windows.h>
-#include <basetsd.h>
+#include <QTimer>
 #include <dinput.h>
 
-
-class Joystick
+class DirectInputJoystick : public QObject
 {
+    Q_OBJECT
+
 public:
-    unsigned int            id;
-    unsigned int            device_counter;
+    explicit DirectInputJoystick(QObject *parent = nullptr);
+    ~DirectInputJoystick();
 
-    LPDIRECTINPUT8          di;
-    LPDIRECTINPUTDEVICE8    joystick;
+    bool initialize();
+    void update();
+    int connectedJoystickCount() const;
 
-    Joystick(unsigned int id);
-    ~Joystick();
+signals:
+    void joystick1AxisXChanged(int value);
+    void joystick1AxisYChanged(int value);
+    void joystick1AxisZChanged(int value);
+    void joystick1SliderChanged(int value);
+    void joystick2AxisXChanged(int value);
+    void joystick2AxisYChanged(int value);
+    void joystick2AxisZChanged(int value);
+    void joystick2SliderChanged(int value);
+    void joystickButtonStateChanged(int joystick, int button, bool pressed);
+    void connectedJoystickCountChanged(int count);
 
-    HRESULT deviceName(char* name);
 
-    HRESULT open();
-    HRESULT close();
+private:
+    static BOOL CALLBACK enumDevicesCallback(const DIDEVICEINSTANCE *pdidInstance, VOID *pContext);
+    HRESULT createDevice(IDirectInput8 *pDI, const DIDEVICEINSTANCE *pdidInstance);
+    void pollDevices();
+    void processDeviceInput(int deviceIndex, DIJOYSTATE &currentState);
 
-    HRESULT poll(DIJOYSTATE2 *js);
+    IDirectInput8 *m_directInput;
+    IDirectInputDevice8 *m_joysticks[2];
+    QTimer *m_updateTimer;
+    int m_previousJoystickCount;
+    QTimer *m_joystickCountTimer;
+    DIJOYSTATE m_previousDeviceState[2];
 
-    BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE* instance, VOID* context);
 
-    // Device Querying
-    static unsigned int deviceCount();
+private slots:
+    void checkJoystickCount();
 };
 
-BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE* instance, VOID* context);
-BOOL CALLBACK countCallback(const DIDEVICEINSTANCE* instance, VOID* counter);
-
-#endif /* __JOYSTICK_H__ */
-
-
-
-
+#endif // DIRECTINPUTJOYSTICK_H

@@ -73,6 +73,7 @@ public slots:
 
 signals:
     void controlVirtualSliders();
-    void controlPhysicalJoystick();
+    void controlPhysicalJoystick1();
+    void controlPhysicalJoystick2();
 };
 #endif // ARM_H

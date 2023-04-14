@@ -37,7 +37,8 @@ private:
     Drive* drive;
     Arm* arm;
     JoystickWidget* joystickWidget;
-    std::vector<Joystick> joystickPhysical;
+    DirectInputJoystick* joystick;
+
 
     QTimer *connectionTimer;
     QTimer *armTimer;
@@ -51,7 +52,17 @@ private:
 
     QMetaObject::Connection connConnectionTimer;
     QMetaObject::Connection connArmTimer;
+    QMetaObject::Connection connArmPhysicalX;
+    QMetaObject::Connection connArmPhysicalY;
+    QMetaObject::Connection connArmPhysicalZ;
+    QMetaObject::Connection  connArmPhysicalPower;
+
     QMetaObject::Connection connDriveTimer;
+    QMetaObject::Connection connDrivePhysicalX;
+    QMetaObject::Connection connDrivePhysicalY;
+    QMetaObject::Connection connDrivePhysicalZ;
+    QMetaObject::Connection connDrivePhysicalPower;
+
     QMetaObject::Connection connJoystickPhysicalTimer;
     QMetaObject::Connection connDriveControlVirtual;
     QMetaObject::Connection connDriveControlPhysical;
