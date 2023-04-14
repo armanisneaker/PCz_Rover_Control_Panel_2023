@@ -51,7 +51,7 @@ bool Connection::sendFrame()
     }
     else
     {
-        qDebug() << "Frame not sent. It's "<<bytesSentInLastFrame<<" bytes long.";
+        qDebug() << QDateTime::currentDateTime().toString("HH:mm:ss.zzz") << "Frame not sent. It's "<<bytesSentInLastFrame<<" bytes long.";
         return false;
     }
 }

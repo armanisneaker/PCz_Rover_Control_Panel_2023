@@ -161,7 +161,7 @@ void JoystickWidget::resizeEvent(QResizeEvent *event)
     }
 
     m_bounds = QRectF(topleft, QSize(a, a));
-    qDebug() << m_bounds;
+    //qDebug() << m_bounds;
 
     m_knopBounds.setWidth(a * 0.3);
     m_knopBounds.setHeight(a*0.3);

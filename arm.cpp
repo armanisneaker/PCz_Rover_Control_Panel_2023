@@ -9,6 +9,18 @@ Arm::Arm(QObject *parent) : QObject(parent)
     containerPower = 0;
     activeButtonFunction = ButtonFunction::none;
     buttonPressed = 120;
+
+    joyX = 0.00;
+    joyY = 0.00;
+    joyZ = 0.00;
+
+    powerOnMotors = 0;
+
+    deadzone = 0.25;
+
+    motorX = 0;
+    motorY = 0;
+    motorZ = 0;
 }
 
 bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed)
@@ -127,7 +139,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     QDataStream stream(&frame, QIODevice::WriteOnly);
     stream << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
-    qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
+    //qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
 
     return true;

@@ -25,6 +25,9 @@ public:
 
     void updateButtonFunctionColors();
 
+    void updateUI(int containerX, int containerY, int containerZ, int containerPower);
+    void processButtonPressed(int buttonPressedNow, Arm* arm);
+    void processJoystickState(int joystickNumber, Arm* arm);
 
 
 private:

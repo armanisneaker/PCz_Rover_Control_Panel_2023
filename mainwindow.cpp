@@ -25,10 +25,10 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     //lambdas ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     auto connectionLambda =[=]()
     {
-        connection->createFrame(drive->frame, "Arm");
+        connection->createFrame(drive->frame, arm->frame);
     };
 
-    auto armVirtualLambda =[=]()
+    auto armVirtualLambda =[this]()
     {
         arm->containerX = static_cast<int> ((ui->horizontalSlider_x_arm->value() + 100.0) *65535.0 / 200.0);
         arm->containerY = static_cast<int> ((ui->horizontalSlider_y_arm->value() + 100.0) *65535.0 / 200.0);
@@ -39,20 +39,31 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
             if(arm->buttonFunctionKeys[i].isActive == true) arm->activeButtonFunction = arm->buttonFunctionKeys[i].function;
         }
         arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, 120);
-        arm->printButtonFunction(arm->activeButtonFunction);
-        arm->printButtonFunction(arm->buttonFunctionKeys[0].function);
-        arm->printButtonFunction(arm->buttonFunctionKeys[1].function);
+        //qDebug() <<arm->containerX<<arm->containerX/16383.0f;
+        //arm->printButtonFunction(arm->activeButtonFunction);
+        //arm->printButtonFunction(arm->buttonFunctionKeys[0].function);
+        //arm->printButtonFunction(arm->buttonFunctionKeys[1].function);
     };
 
-    auto armPhysicalLambda =[=]() {};
+    auto armPhysicalLambda = [this]() {
+        arm->calculateSegmentsSpeeds(0, 0, 0, 0, Arm::none, 120);
+        updateUI(0, 0, 0, 0);
 
-    auto driveVirtualLambda =[=]()
+        for (int joystickNumber = 0; joystickNumber < numJoysticks; joystickNumber++) {
+            if (ui->comboBox_arm_control->currentIndex() == joystickNumber + 1) {
+                processJoystickState(joystickNumber, arm);
+            }
+        }
+    };
+
+
+    auto driveVirtualLambda =[this]()
     {
         drive->calculateWheelsSpeeds(joystickWidget->x() *16383, joystickWidget->y() *16383, ui->horizontalSlider_power_drive->value());
         //qDebug() <<joystickWidget->x()*16383 << joystickWidget->y()*16383 << ui->horizontalSlider_power_drive->value();
     };
 
-    auto drivePhysicalLambda =[=]()
+    auto drivePhysicalLambda =[this]()
     {
         drive->calculateWheelsSpeeds(0, 0, 0);
         ui->horizontalSlider_power_drive->setValue(0);
@@ -100,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         connDriveTimer = connect(driveTimer, &QTimer::timeout, drive, drivePhysicalLambda);
     };
 
-    auto manageJoysticksPhysicalLambda =[=]()
+    auto manageJoysticksPhysicalLambda =[this]()
     {
         numJoysticks = Joystick::deviceCount();
         ui->label_joysticks_count->setText(QString::number(numJoysticks));
@@ -295,10 +306,10 @@ connect(ui->horizontalSlider_z_arm, &QSlider::valueChanged, this, [=]()
     });
 
 //timers start------------------------------------------------------------------------------------------------------------------------------------------------------------------
-uiTimer->start(1);
-driveTimer->start(1);
-armTimer->start(1);
-connectionTimer->start(1);
+uiTimer->start(1000 / 60);
+driveTimer->start(1000 / 60);
+armTimer->start(1000 / 60);
+connectionTimer->start(33);
 joystickPhysicalTimer->start(500);
 lastFrameSentTime->start();
 
@@ -434,4 +445,50 @@ void MainWindow::updateButtonFunctionColors()
     {
         ui->pushButton_button_function_arm_6->setText("6");
     }
+}
+
+void MainWindow::updateUI(int containerX, int containerY, int containerZ, int containerPower) {
+    ui->horizontalSlider_x_arm->setValue(containerX / 327.67 - 100);
+    ui->horizontalSlider_y_arm->setValue(containerY / 327.67 - 100);
+    ui->horizontalSlider_z_arm->setValue(containerZ / 327.67 - 100);
+    ui->horizontalSlider_power_arm->setValue(containerPower);
+}
+
+void MainWindow::processButtonPressed(int buttonPressedNow, Arm* arm) {
+    arm->buttonPressed = buttonPressedNow;
+
+    for (int buttonFunctionKeyNumber = 0; buttonFunctionKeyNumber < 6; buttonFunctionKeyNumber++) {
+        if (buttonPressedNow >= 4 && buttonPressedNow <= 9) {
+            if (buttonPressedNow - 4 == buttonFunctionKeyNumber) {
+                arm->buttonFunctionKeys[buttonFunctionKeyNumber].isActive = true;
+            } else {
+                arm->buttonFunctionKeys[buttonFunctionKeyNumber].isActive = false;
+            }
+        }
+    }
+}
+
+void MainWindow::processJoystickState(int joystickNumber, Arm* arm) {
+    arm->containerX = joystickState[joystickNumber].lX;
+    arm->containerY = 65534 - joystickState[joystickNumber].lY;
+    arm->containerZ = joystickState[joystickNumber].lRz;
+    arm->containerPower = ((joystickState[joystickNumber].rglSlider[0] / physicalJoystickMaxValue) * 100 - 100) * -1;
+    joystickPhysical[joystickNumber].poll(&joystickState[joystickNumber]);
+    arm->buttonPressed = -1;
+
+    for (int buttonPressedNow = 0; buttonPressedNow < 20; buttonPressedNow++) {
+        if (joystickState[joystickNumber].rgbButtons[buttonPressedNow] & 0x80) {
+            //qDebug() << buttonPressedNow;
+            processButtonPressed(buttonPressedNow, arm);
+        }
+    }
+
+    for (int i = 0; i < 6; i++) {
+        if (arm->buttonFunctionKeys[i].isActive == true) {
+            arm->activeButtonFunction = arm->buttonFunctionKeys[i].function;
+        }
+    }
+
+    arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, arm->buttonPressed);
+    updateUI(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
 }

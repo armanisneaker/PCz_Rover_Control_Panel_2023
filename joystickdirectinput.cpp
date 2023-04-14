@@ -55,9 +55,10 @@ Joystick::open()
     // Look for the first simple joystick we can find.
     if (FAILED(hr = di->EnumDevices(DI8DEVCLASS_GAMECTRL, ::enumCallback,
                                     (LPVOID)this, DIEDFL_ATTACHEDONLY))) {
+        SAFE_RELEASE(di);
         return hr;
-
     }
+
 
     // Make sure we got a joystick
     if (joystick == NULL) {
@@ -180,6 +181,7 @@ Joystick::deviceCount()
                                           (VOID**)&di, NULL))) {
         di->EnumDevices(DI8DEVCLASS_GAMECTRL, ::countCallback,
                         &counter, DIEDFL_ATTACHEDONLY);
+        SAFE_RELEASE(di);
     }
 
     return counter;

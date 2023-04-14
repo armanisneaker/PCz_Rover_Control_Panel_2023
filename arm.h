@@ -13,6 +13,7 @@ public:
 
     explicit Arm(QObject *parent = 0);
 
+
     QByteArray frame;
 
     enum ButtonFunction
@@ -56,17 +57,17 @@ private:
     int16_t motorJawsRotation;
     int16_t motorJawsClench;
 
-    double joyX = 0.00;
-    double joyY = 0.00;
-    double joyZ = 0.00;
+    double joyX ;
+    double joyY ;
+    double joyZ ;
 
-    int powerOnMotors = 0;
+    int powerOnMotors;
 
-    double deadzone = 0.25;
+    double deadzone;
 
-    int motorX = 0;
-    int motorY = 0;
-    int motorZ = 0;
+    int motorX;
+    int motorY;
+    int motorZ ;
 
 public slots:
 
