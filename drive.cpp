@@ -3,6 +3,11 @@
 Drive::Drive(QObject *parent) : QObject(parent)
 {
     frame.QByteArray::clear();
+    leftSpeed = 3200;
+    rightSpeed = 3200;
+    containerX = 32767;
+    containerY = 32767;
+    containerPower = 0;
 }
 
 bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
@@ -11,8 +16,8 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
     frame.QByteArray::clear();
 
     // Adjust the input range from 0 to 65535 to -32768 to 32767
-    int adjustedX = (x - 32768) /2 ;
-    int adjustedY = (y - 32768) /2;
+    adjustedX = (x - 32768) /2 ;
+    adjustedY = (y - 32768) /2;
 
     // Calculate the normalized joystick values within the deadzone
     normX = qBound(-1.0, (double)adjustedX / MAX_JOYSTICK_VALUE, 1.0);

@@ -32,6 +32,8 @@ private:
     double w;
     int16_t leftSpeed;
     int16_t rightSpeed;
+    int adjustedX;
+    int adjustedY;
 
 public slots:
     bool calculateWheelsSpeeds(const int x, const int y, const int power);

@@ -139,7 +139,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     QDataStream stream(&frame, QIODevice::WriteOnly);
     stream << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
-    //qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
+    qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
 
     return true;

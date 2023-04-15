@@ -75,5 +75,6 @@ signals:
     void controlVirtualSliders();
     void controlPhysicalJoystick1();
     void controlPhysicalJoystick2();
+    void buttonFunctionChanged();
 };
 #endif // ARM_H

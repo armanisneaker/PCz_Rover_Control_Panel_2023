@@ -43,26 +43,31 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         arm->containerY = static_cast<int> ((ui->horizontalSlider_y_arm->value() + 100.0) *65535.0 / 200.0);
         arm->containerZ = static_cast<int> ((ui->horizontalSlider_z_arm->value() + 100.0) *65535.0 / 200.0);
         arm->containerPower = ui->horizontalSlider_power_arm->value();
-        for(int i=0; i<6; i++)
-        {
-            if(arm->buttonFunctionKeys[i].isActive == true) arm->activeButtonFunction = arm->buttonFunctionKeys[i].function;
-        }
+
         arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, -1);
         //qDebug() <<arm->containerX<<arm->containerX/16383.0f;
         //arm->printButtonFunction(arm->activeButtonFunction);
         //arm->printButtonFunction(arm->buttonFunctionKeys[0].function);
         //arm->printButtonFunction(arm->buttonFunctionKeys[1].function);
     };
+    connect(ui->pushButton_button_function_arm_1, &QPushButton::clicked, [this](){processButtonPressed(4,arm);});
+    connect(ui->pushButton_button_function_arm_2, &QPushButton::clicked, [this](){processButtonPressed(5, arm);});
+    connect(ui->pushButton_button_function_arm_3, &QPushButton::clicked, [this](){processButtonPressed(6, arm);});
+    connect(ui->pushButton_button_function_arm_4, &QPushButton::clicked, [this](){processButtonPressed(7, arm);});
+    connect(ui->pushButton_button_function_arm_5, &QPushButton::clicked, [this](){processButtonPressed(8, arm);});
+    connect(ui->pushButton_button_function_arm_6, &QPushButton::clicked, [this](){processButtonPressed(9, arm);});
+
 
     auto armPhysicalLambda = [this]() {
         arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, arm->buttonPressed);
-        updateUI(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
+        updateUiArm(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
         //qDebug() << arm->containerX << arm->containerY << arm->containerZ << arm->containerPower;
     };
 
     auto driveLambda =[this]()
     {
         drive->calculateWheelsSpeeds(drive->containerX, physicalJoystickMaxValue - drive->containerY, drive->containerPower);
+        updateUiDrive(drive->containerX, drive->containerY, drive->containerPower);
     };
 
     auto armControlVirtualLambda =[=]()
@@ -71,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         disconnect(connArmPhysicalX);
         disconnect(connArmPhysicalY);
         disconnect(connArmPhysicalZ);
+        disconnect(connArmPhysicalButton);
         connArmTimer = connect(armTimer, &QTimer::timeout, arm, armVirtualLambda);
     };
 
@@ -80,11 +86,15 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         disconnect(connArmPhysicalX);
         disconnect(connArmPhysicalY);
         disconnect(connArmPhysicalZ);
+        disconnect(connArmPhysicalButton);
         connArmTimer = connect(armTimer, &QTimer::timeout, arm, armPhysicalLambda);
         connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, [this](int value) { arm->containerX = value;});
         connArmPhysicalY = connect(joystick, &DirectInputJoystick::joystick1AxisYChanged, [this](int value) { arm->containerY = value;});
         connArmPhysicalZ = connect(joystick, &DirectInputJoystick::joystick1AxisZChanged, [this](int value) { arm->containerZ = value;});
         connArmPhysicalPower = connect(joystick, &DirectInputJoystick::joystick1SliderChanged, [this](int value) { arm->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1;});
+        connArmPhysicalButton = connect(joystick, &DirectInputJoystick::joystick1ButtonStateChanged, [this](int button, bool pressed){arm->buttonPressed = button;
+               processButtonPressed(button, arm);
+        });
     };
 
     auto armControlPhysical2Lambda =[=]()
@@ -93,11 +103,13 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         disconnect(connArmPhysicalX);
         disconnect(connArmPhysicalY);
         disconnect(connArmPhysicalZ);
+        disconnect(connArmPhysicalButton);
         connArmTimer = connect(armTimer, &QTimer::timeout, arm, armPhysicalLambda);
         connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, [this](int value) { arm->containerX = value;});
         connArmPhysicalY = connect(joystick, &DirectInputJoystick::joystick2AxisYChanged, [this](int value) { arm->containerY = value;});
         connArmPhysicalZ = connect(joystick, &DirectInputJoystick::joystick2AxisZChanged, [this](int value) { arm->containerZ = value;});
         connArmPhysicalPower = connect(joystick, &DirectInputJoystick::joystick2SliderChanged, [this](int value) { arm->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1;});
+        connArmPhysicalButton = connect(joystick, &DirectInputJoystick::joystick2ButtonStateChanged, [this](int button, bool pressed){arm->buttonPressed = button;});
     };
 
     auto driveControlVirtualLambda =[=]()
@@ -130,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
         connDrivePhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, [this](int value) { drive->containerX = value; });
         connDrivePhysicalY = connect(joystick, &DirectInputJoystick::joystick2AxisYChanged, [this](int value) { drive->containerY = value; });
         connDrivePhysicalPower = connect(joystick, &DirectInputJoystick::joystick2SliderChanged, [this](int value) { drive->containerPower = ((value/physicalJoystickMaxValue)*100-100)*-1; });
-
+        updateUiDrive(drive->containerX, drive->containerY, drive->containerPower);
     };
 
 
@@ -185,6 +197,10 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
 
 //BUSINESS ======================================================================================================================================================================================
 connect(connectionTimer, &QTimer::timeout, connection, connectionLambda);
+connDrivePhysicalX = connect(joystickWidget, &JoystickWidget::xChanged, [this](float value) { drive->containerX = (value+1.0)*32767; qDebug() <<value;  });
+connDrivePhysicalY = connect(joystickWidget, &JoystickWidget::yChanged, [this](float value) { drive->containerY = 65535 - (value+1.0)*32767;  });
+connDrivePhysicalPower = connect(ui->horizontalSlider_power_drive, &QSlider::valueChanged,[this](int value) { drive->containerPower = value;  });
+
 
 connect(driveTimer, &QTimer::timeout, drive, driveLambda);
 
@@ -253,21 +269,13 @@ connect(uiTimer, &QTimer::timeout, this, [=]()
     setButtonFunction(ui->comboBox_arm_4, arm->buttonFunctionKeys[3]);
     setButtonFunction(ui->comboBox_arm_5, arm->buttonFunctionKeys[4]);
     setButtonFunction(ui->comboBox_arm_6, arm->buttonFunctionKeys[5]);
-    updateButtonFunctionColors();
 
 
     });
 //UI INITIALIZATION======================================================================================================================================================================================
 ui->label_frames_sent_count->setStyleSheet("background-color: rgb(160,20,40);");
+connect(arm, &Arm::buttonFunctionChanged, this, &MainWindow::updateButtonColors);
 //UI Drive------------------------------------------------------------------------------------------------------------------------------------------------------------------
-connect(joystickWidget, &JoystickWidget::xChanged, this, [=]()
-{
-    ui->horizontalSlider_x_drive->setValue(joystickWidget->x() *100);
-    });
-connect(joystickWidget, &JoystickWidget::yChanged, this, [=]()
-{
-    ui->horizontalSlider_y_drive->setValue(joystickWidget->y() *100);
-    });
 connect(ui->horizontalSlider_power_drive, &QSlider::valueChanged, this, [=]()
 {
     ui->spinBox_power_drive->setValue(ui->horizontalSlider_power_drive->value());
@@ -396,68 +404,17 @@ void MainWindow::on_horizontalSlider_y_drive_sliderReleased()
     ui->horizontalSlider_y_drive->setValue(0);
 }
 
-void MainWindow::updateButtonFunctionColors()
-{
-    if (arm->buttonFunctionKeys[0].isActive == true)
-    {
-        ui->pushButton_button_function_arm_1->setText("[1]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_1->setText("1");
-    }
-
-    if (arm->buttonFunctionKeys[1].isActive == true)
-    {
-        ui->pushButton_button_function_arm_2->setText("[2]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_2->setText("2");
-    }
-
-    if (arm->buttonFunctionKeys[2].isActive == true)
-    {
-        ui->pushButton_button_function_arm_3->setText("[3]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_3->setText("3");
-    }
-
-    if (arm->buttonFunctionKeys[3].isActive == true)
-    {
-        ui->pushButton_button_function_arm_4->setText("[4]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_4->setText("4");
-    }
-
-    if (arm->buttonFunctionKeys[4].isActive == true)
-    {
-        ui->pushButton_button_function_arm_5->setText("[5]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_5->setText("5");
-    }
-
-    if (arm->buttonFunctionKeys[5].isActive == true)
-    {
-        ui->pushButton_button_function_arm_6->setText("[6]");
-    }
-    else
-    {
-        ui->pushButton_button_function_arm_6->setText("6");
-    }
-}
-
-void MainWindow::updateUI(int containerX, int containerY, int containerZ, int containerPower) {
+void MainWindow::updateUiArm(int containerX, int containerY, int containerZ, int containerPower) {
     ui->horizontalSlider_x_arm->setValue(containerX / 327.67 - 100);
     ui->horizontalSlider_y_arm->setValue(containerY / 327.67 - 100);
     ui->horizontalSlider_z_arm->setValue(containerZ / 327.67 - 100);
     ui->horizontalSlider_power_arm->setValue(containerPower);
+}
+
+void MainWindow::updateUiDrive(int containerX, int containerY, int containerPower) {
+    ui->horizontalSlider_x_drive->setValue(containerX / 327.67 - 100);
+    ui->horizontalSlider_y_drive->setValue(containerY / 327.67 - 100);
+    ui->horizontalSlider_power_drive->setValue(containerPower);
 }
 
 void MainWindow::processButtonPressed(int buttonPressedNow, Arm* arm) {
@@ -467,34 +424,35 @@ void MainWindow::processButtonPressed(int buttonPressedNow, Arm* arm) {
         if (buttonPressedNow >= 4 && buttonPressedNow <= 9) {
             if (buttonPressedNow - 4 == buttonFunctionKeyNumber) {
                 arm->buttonFunctionKeys[buttonFunctionKeyNumber].isActive = true;
+
             } else {
                 arm->buttonFunctionKeys[buttonFunctionKeyNumber].isActive = false;
             }
         }
     }
+    emit arm->buttonFunctionChanged();
 }
 
-void MainWindow::processJoystickState(int joystickNumber, Arm* arm) {
-    arm->containerX = joystickState[joystickNumber].lX;
-    arm->containerY = 65534 - joystickState[joystickNumber].lY;
-    arm->containerZ = joystickState[joystickNumber].lRz;
-    arm->containerPower = ((joystickState[joystickNumber].rglSlider[0] / physicalJoystickMaxValue) * 100 - 100) * -1;
+// Function to update the button colors
+void MainWindow::updateButtonColors()
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        // Find the button by its objectName
+        QString buttonName = QString("pushButton_button_function_arm_%1").arg(i + 1);
+        QPushButton *button = centralWidget()->findChild<QPushButton *>(buttonName);
 
-    arm->buttonPressed = -1;
+        // Check if the button was found
+        if (button)
+        {
+            // Set the button color to green if isActive is true, otherwise set it to red
+            QColor color = arm->buttonFunctionKeys[i].isActive ? QColor(Qt::darkGreen) : QColor(Qt::red);
 
-    for (int buttonPressedNow = 0; buttonPressedNow < 20; buttonPressedNow++) {
-        if (joystickState[joystickNumber].rgbButtons[buttonPressedNow] & 0x80) {
-            //qDebug() << buttonPressedNow;
-            processButtonPressed(buttonPressedNow, arm);
+            // Update the button style with the new color
+            button->setStyleSheet(QString("background-color: %1").arg(color.name()));
         }
     }
-
-    for (int i = 0; i < 6; i++) {
-        if (arm->buttonFunctionKeys[i].isActive == true) {
-            arm->activeButtonFunction = arm->buttonFunctionKeys[i].function;
-        }
-    }
-
-    arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, arm->buttonPressed);
-    updateUI(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
 }
+
+
+

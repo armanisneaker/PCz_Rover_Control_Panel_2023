@@ -19,8 +19,7 @@ DirectInputJoystick::DirectInputJoystick(QObject *parent)
     }
 
     connect(m_joystickCountTimer, &QTimer::timeout, this, &DirectInputJoystick::checkJoystickCount);
-    m_joystickCountTimer->start(100);  // Check every 1 second
-    qDebug() << "Timer started";
+    m_joystickCountTimer->start(500);  // Check every 1 second
 }
 
 DirectInputJoystick::~DirectInputJoystick()
@@ -43,6 +42,8 @@ DirectInputJoystick::~DirectInputJoystick()
 
 bool DirectInputJoystick::initialize()
 {
+    releaseJoysticks();
+
     HRESULT hr = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (VOID **)&m_directInput, nullptr);
     if (FAILED(hr))
     {
@@ -59,6 +60,7 @@ bool DirectInputJoystick::initialize()
 
     return true;
 }
+
 
 void DirectInputJoystick::update()
 {
@@ -140,7 +142,6 @@ void DirectInputJoystick::processDeviceInput(int deviceIndex, DIJOYSTATE &curren
     // Process X-axis
     if (currentState.lX != m_previousDeviceState[deviceIndex].lX)
     {
-        m_previousDeviceState[deviceIndex].lX = currentState.lX;
         if (deviceIndex == 0)
         {
             emit joystick1AxisXChanged(currentState.lX);
@@ -149,51 +150,60 @@ void DirectInputJoystick::processDeviceInput(int deviceIndex, DIJOYSTATE &curren
         {
             emit joystick2AxisXChanged(currentState.lX);
         }
+        m_previousDeviceState[deviceIndex].lX = currentState.lX;
     }
 
     // Process Y-axis
     if (currentState.lY != m_previousDeviceState[deviceIndex].lY)
     {
-        m_previousDeviceState[deviceIndex].lY = currentState.lY;
         if (deviceIndex == 0)
             emit joystick1AxisYChanged(currentState.lY);
         else
             emit joystick2AxisYChanged(currentState.lY);
+
+        m_previousDeviceState[deviceIndex].lY = currentState.lY;
     }
 
     // Process Z-axis
     if (currentState.lRz != m_previousDeviceState[deviceIndex].lRz)
     {
-        m_previousDeviceState[deviceIndex].lRz = currentState.lRz;
         if (deviceIndex == 0)
             emit joystick1AxisZChanged(currentState.lRz);
         else
             emit joystick2AxisZChanged(currentState.lRz);
+
+        m_previousDeviceState[deviceIndex].lRz = currentState.lRz;
     }
 
     // Process Slider
     if (currentState.rglSlider[0] != m_previousDeviceState[deviceIndex].rglSlider[0])
     {
-        m_previousDeviceState[deviceIndex].rglSlider[0] = currentState.rglSlider[0];
         if (deviceIndex == 0)
             emit joystick1SliderChanged(currentState.rglSlider[0]);
         else
             emit joystick2SliderChanged(currentState.rglSlider[0]);
+
+        m_previousDeviceState[deviceIndex].rglSlider[0] = currentState.rglSlider[0];
     }
 
     // Process Buttons
-    for (int button = 0; button < 32; button++)
-    {
-        bool currentStatePressed = (currentState.rgbButtons[button] & 0x80) != 0;
-        bool previousStatePressed = (m_previousDeviceState[deviceIndex].rgbButtons[button] & 0x80) != 0;
-
-        if (currentStatePressed != previousStatePressed)
+        for (int button = 0; button < 32; button++)
         {
-            m_previousDeviceState[deviceIndex].rgbButtons[button] = currentState.rgbButtons[button];
-            emit joystickButtonStateChanged(deviceIndex, button, currentStatePressed);
+            bool currentStatePressed = (currentState.rgbButtons[button] & 0x80) != 0;
+            bool previousStatePressed = (m_previousDeviceState[deviceIndex].rgbButtons[button] & 0x80) != 0;
+
+            if (currentStatePressed != previousStatePressed)
+            {
+                if (deviceIndex == 0)
+                    emit joystick1ButtonStateChanged(button, currentStatePressed);
+                else
+                    emit joystick2ButtonStateChanged(button, currentStatePressed);
+
+                m_previousDeviceState[deviceIndex].rgbButtons[button] = currentState.rgbButtons[button];
+            }
         }
-    }
 }
+
 
 
 
@@ -212,6 +222,12 @@ int DirectInputJoystick::connectedJoystickCount() const
 
 void DirectInputJoystick::checkJoystickCount()
 {
+    HRESULT hr = m_directInput->EnumDevices(DI8DEVCLASS_GAMECTRL, enumDevicesCallbackUpdate, this, DIEDFL_ATTACHEDONLY);
+    if (FAILED(hr))
+    {
+        qWarning() << "Failed to enumerate DirectInput devices during checkJoystickCount.";
+    }
+
     int currentCount = connectedJoystickCount();
 
     if (currentCount != m_previousJoystickCount)
@@ -221,3 +237,45 @@ void DirectInputJoystick::checkJoystickCount()
     }
 }
 
+
+void DirectInputJoystick::releaseJoysticks()
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        if (m_joysticks[i])
+        {
+            m_joysticks[i]->Unacquire();
+            m_joysticks[i]->Release();
+            m_joysticks[i] = nullptr;
+        }
+    }
+}
+
+BOOL CALLBACK DirectInputJoystick::enumDevicesCallbackUpdate(const DIDEVICEINSTANCE *pdidInstance, VOID *pContext)
+{
+    DirectInputJoystick *pThis = static_cast<DirectInputJoystick *>(pContext);
+    bool deviceFound = false;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (pThis->m_joysticks[i] != nullptr)
+        {
+            DIDEVICEINSTANCE instance;
+            ZeroMemory(&instance, sizeof(DIDEVICEINSTANCE));
+            instance.dwSize = sizeof(DIDEVICEINSTANCE);
+
+            if (pThis->m_joysticks[i]->GetDeviceInfo(&instance) == DI_OK && instance.guidInstance == pdidInstance->guidInstance)
+            {
+                deviceFound = true;
+                break;
+            }
+        }
+    }
+
+    if (!deviceFound)
+    {
+        pThis->createDevice(pThis->m_directInput, pdidInstance);
+    }
+
+    return DIENUM_CONTINUE;
+}

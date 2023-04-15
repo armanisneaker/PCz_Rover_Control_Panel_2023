@@ -25,9 +25,9 @@ public:
 
     void updateButtonFunctionColors();
 
-    void updateUI(int containerX, int containerY, int containerZ, int containerPower);
-    void processButtonPressed(int buttonPressedNow, Arm* arm);
-    void processJoystickState(int joystickNumber, Arm* arm);
+    void updateUiArm(int containerX, int containerY, int containerZ, int containerPower);
+    void updateUiDrive(int containerX, int containerY, int containerPower);
+    //void processButtonPressed(int buttonPressedNow, Arm* arm);
 
 
 private:
@@ -56,6 +56,7 @@ private:
     QMetaObject::Connection connArmPhysicalY;
     QMetaObject::Connection connArmPhysicalZ;
     QMetaObject::Connection  connArmPhysicalPower;
+    QMetaObject::Connection  connArmPhysicalButton;
 
     QMetaObject::Connection connDriveTimer;
     QMetaObject::Connection connDrivePhysicalX;
@@ -82,5 +83,7 @@ private slots:
     void on_horizontalSlider_z_arm_sliderReleased();
     void on_horizontalSlider_x_drive_sliderReleased();
     void on_horizontalSlider_y_drive_sliderReleased();
+    void updateButtonColors();
+    void processButtonPressed(int buttonPressedNow, Arm* arm);
 };
 #endif // MAINWINDOW_H
