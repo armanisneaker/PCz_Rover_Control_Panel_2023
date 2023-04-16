@@ -5,30 +5,35 @@
 #include <QIODevice>
 #include <QDebug>
 
-
 class Arm : public QObject
 {
     Q_OBJECT
 public:
-
-    explicit Arm(QObject *parent = 0);
-
+    explicit Arm(QObject *parent = nullptr);
 
     QByteArray frame;
 
     enum ButtonFunction
     {
-        none = 0,
-        first = 1,
-        second = 2,
-        third = 3,
-        jaws = 4,
-        all = 5,
-        inverseKinematics = 6
+        None = 0,
+        First = 1,
+        Second = 2,
+        Third = 3,
+        Jaws = 4,
+        All = 5,
+        InverseKinematics = 6
     };
 
+    struct ButtonFunctionKey
+    {
+        ButtonFunction function;
+        bool isActive;
 
-    void printButtonFunction(ButtonFunction buttonFunction);
+        ButtonFunctionKey() : function(Arm::None), isActive(false) {}
+    };
+
+    ButtonFunctionKey buttonFunctionKeys[6];
+    bool calculateSegmentsSpeeds(int x, int y, int z, int power, ButtonFunction buttonFunction, int buttonPressed);
     int containerX;
     int containerY;
     int containerZ;
@@ -36,19 +41,8 @@ public:
     ButtonFunction activeButtonFunction;
     int buttonPressed;
 
-    struct ButtonFunctionKey
-    {
-        ButtonFunction function;
-        bool isActive;
-
-        ButtonFunctionKey() : function(Arm::none), isActive(false){}
-    };
-
-    ButtonFunctionKey buttonFunctionKeys[6];
-
-    bool calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed);
-
 private:
+
 
     int16_t motorBase;
     int16_t motorSegment2Middle;
@@ -57,9 +51,9 @@ private:
     int16_t motorJawsRotation;
     int16_t motorJawsClench;
 
-    double joyX ;
-    double joyY ;
-    double joyZ ;
+    double joyX;
+    double joyY;
+    double joyZ;
 
     int powerOnMotors;
 
@@ -67,14 +61,17 @@ private:
 
     int motorX;
     int motorY;
-    int motorZ ;
+    int motorZ;
 
 public slots:
+    void processButtonPressed(int buttonPressedNow);
+    void onButtonFunctionIndexChanged(int index, int newIndex);
 
 signals:
     void controlVirtualSliders();
     void controlPhysicalJoystick1();
     void controlPhysicalJoystick2();
-    void buttonFunctionChanged();
+    void buttonFunctionChanged(int index);
 };
+
 #endif // ARM_H

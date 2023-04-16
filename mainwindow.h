@@ -27,7 +27,8 @@ public:
 
     void updateUiArm(int containerX, int containerY, int containerZ, int containerPower);
     void updateUiDrive(int containerX, int containerY, int containerPower);
-    //void processButtonPressed(int buttonPressedNow, Arm* arm);
+
+
 
 
 private:
@@ -74,6 +75,8 @@ private:
     int joystickNumber;
     float physicalJoystickMaxValue = 65535;
 
+
+
 private slots:
     void updateFrameStatusLabel();
     void on_comboBox_drive_control_currentTextChanged(const QString &arg1);
@@ -84,6 +87,25 @@ private slots:
     void on_horizontalSlider_x_drive_sliderReleased();
     void on_horizontalSlider_y_drive_sliderReleased();
     void updateButtonColors();
-    void processButtonPressed(int buttonPressedNow, Arm* arm);
+    void connectionSlot();
+    void armSlot();
+    void armControlVirtualSlot();
+    void armControlPhysical1Slot();
+    void armControlPhysical2Slot();
+    void initializeTimers();
+    void startTimers();
+    void initializeClasses();
+    void initializeBusiness();
+    void initializeUi();
+    void setupBusinessConnections();
+    void setupUiConnections();
+    void connectArmButtons();
+    void setButtonFunction(QComboBox *comboBox, Arm::ButtonFunctionKey &buttonFunctionKey);
+    void driveSlot();
+    void driveControlVirtualSlot();
+    void driveControlPhysical1Slot();
+    void driveControlPhysical2Slot();
+    void deleteClasses();
+    void deleteTimers();
 };
 #endif // MAINWINDOW_H

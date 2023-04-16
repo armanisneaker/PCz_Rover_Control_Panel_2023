@@ -25,16 +25,32 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
 
     if (qAbs(adjustedX) < DEADZONE && qAbs(adjustedY) < DEADZONE) {
         // If the joystick values are within the deadzone, set the wheel speeds to 0
-        leftSpeed = 3200;
-        rightSpeed = 3200;
+        if (leftSpeed != 3200) {
+            leftSpeed = 3200;
+            emit leftSpeedChanged(leftSpeed);
+        }
+        if (rightSpeed != 3200) {
+            rightSpeed = 3200;
+            emit rightSpeedChanged(rightSpeed);
+        }
     }
     else {
         // Calculate the wheel speeds based on the differential drive system
         v = normY * MAX_SPEED * (power / 50.0f);
         w = normX * MAX_SPEED * WHEELBASE / 2.0 * (power / 50.0f);
 
-        rightSpeed = qBound(0, static_cast<int>((v - w) * 3200 / MAX_SPEED + 3200), 6400);
-        leftSpeed = qBound(0, static_cast<int>((v + w) * 3200 / MAX_SPEED + 3200), 6400);
+        int16_t newRightSpeed = qBound(0, static_cast<int>((v - w) * 3200 / MAX_SPEED + 3200), 6400);
+        int16_t newLeftSpeed = qBound(0, static_cast<int>((v + w) * 3200 / MAX_SPEED + 3200), 6400);
+
+        // Emit signals if the left or right speed has changed
+        if (newRightSpeed != rightSpeed) {
+            rightSpeed = newRightSpeed;
+            emit rightSpeedChanged(rightSpeed);
+        }
+        if (newLeftSpeed != leftSpeed) {
+            leftSpeed = newLeftSpeed;
+            emit leftSpeedChanged(leftSpeed);
+        }
     }
 
     // Pack the wheel speeds into a QByteArray
@@ -45,12 +61,4 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
     return true;
 }
 
-int16_t Drive::getLeftSpeed() const
-{
-    return leftSpeed;
-}
 
-int16_t Drive::getRightSpeed() const
-{
-    return rightSpeed;
-}

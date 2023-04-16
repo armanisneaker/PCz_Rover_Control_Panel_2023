@@ -14,9 +14,6 @@ public:
 
     QByteArray frame;
 
-    int16_t getLeftSpeed() const;
-    int16_t getRightSpeed() const;
-
     int containerX;
     int containerY;
     int containerPower;
@@ -41,7 +38,8 @@ signals:
     void controlVirtualJoystick();
     void controlPhysicalJoystick1();
     void controlPhysicalJoystick2();
-
+    void leftSpeedChanged(int16_t leftSpeed);
+    void rightSpeedChanged(int16_t rightSpeed);
 };
 
 #endif // DRIVE_H

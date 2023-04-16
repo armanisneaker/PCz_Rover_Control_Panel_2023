@@ -7,92 +7,68 @@ Arm::Arm(QObject *parent) : QObject(parent)
     containerY = 0;
     containerZ = 0;
     containerPower = 0;
-    activeButtonFunction = ButtonFunction::none;
+    activeButtonFunction = ButtonFunction::None;
     buttonPressed = 120;
 
-    joyX = 0.00;
-    joyY = 0.00;
-    joyZ = 0.00;
-
+    joyX = joyY = joyZ = 0.0;
     powerOnMotors = 0;
-
     deadzone = 0.25;
-
-    motorX = 0;
-    motorY = 0;
-    motorZ = 0;
+    motorX = motorY = motorZ = 0;
 }
 
 bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed)
 {
-    frame.QByteArray::clear();
+    frame.clear();
 
-    int16_t motorBase = 11392;
-    int16_t motorSegment2Middle = 11392;
-    int16_t motorSegment1Bottom = 11392;
-    int16_t motorJawsClench = 11392;
-    int16_t motorJawsRotation = 11392;
-    int16_t motorJawsPosition = 11392;
+    constexpr int16_t motorInitial = 11392;
 
-    joyX = (x - 32767) / 32767.0f;
-    joyY = (y - 32767) / 32767.0f;
-    joyZ = (z - 32767) / 32767.0f;
+    int16_t motorBase = motorInitial;
+    int16_t motorSegment2Middle = motorInitial;
+    int16_t motorSegment1Bottom = motorInitial;
+    int16_t motorJawsClench = motorInitial;
+    int16_t motorJawsRotation = motorInitial;
+    int16_t motorJawsPosition = motorInitial;
+
+    constexpr int32_t joystickCenter = 32767;
+    joyX = (x - joystickCenter) / static_cast<float>(joystickCenter);
+    joyY = (y - joystickCenter) / static_cast<float>(joystickCenter);
+    joyZ = (z - joystickCenter) / static_cast<float>(joystickCenter);
 
     powerOnMotors = 100 * power;
 
-    if(!(joyX >= -deadzone && joyX <= deadzone && joyY >= -deadzone && joyY <= deadzone))
-    {
-        motorX = joyX*powerOnMotors;
-        motorY = joyY*powerOnMotors;
-        if(!(joyZ >= -deadzone && joyZ <= deadzone))
-        {
-            motorZ = joyZ*powerOnMotors;
-        }
-        else
-        {
-            motorZ = 0;
-        }
-    }
-    else
-    {
-        motorX = 0;
-        motorY = 0;
-        if(!(joyZ >= -deadzone && joyZ <= deadzone))
-        {
-             motorZ = joyZ*powerOnMotors;
-        }
-        else
-        {
-            motorZ = 0;
-        }
-    }
+    bool outsideDeadzoneX = joyX < -deadzone || joyX > deadzone;
+    bool outsideDeadzoneY = joyY < -deadzone || joyY > deadzone;
+    bool outsideDeadzoneZ = joyZ < -deadzone || joyZ > deadzone;
 
+    motorX = outsideDeadzoneX ? joyX * powerOnMotors : 0;
+    motorY = outsideDeadzoneY ? joyY * powerOnMotors : 0;
+    motorZ = outsideDeadzoneZ ? joyZ * powerOnMotors : 0;
 
     switch(buttonFunction)
     {
-    case none:
+    case None:
         break;
-    case first:
+    case First:
         motorBase = motorZ + 11392;
         motorSegment1Bottom = motorY + 11392;
         //motorJawsRotation = motorX+11392;
         break;
-    case second:
+    case Second:
         motorBase = motorZ + 11392;
         motorSegment2Middle = -motorY+11392;
         //motorJawsRotation = -motorX+11392;
         break;
-    case third:
+    case Third:
         motorBase = motorZ + 11392;
         motorJawsPosition = motorY+11392;
         motorJawsRotation = -motorX+11392;
         break;
-    case jaws:
+    case Jaws:
         motorBase = motorZ + 11392;
         motorJawsRotation = -motorX+11392;
         motorJawsClench = 2*motorY+11392;
         break;
-    case all:
+    case All:
         motorBase = motorZ + 11392;
         switch(buttonPressed)
         {
@@ -139,41 +115,39 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     QDataStream stream(&frame, QIODevice::WriteOnly);
     stream << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
+    qDebug() << x << y << z << power << buttonFunction;
     qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
 
     return true;
 }
 
-void Arm::printButtonFunction(ButtonFunction buttonFunction)
+void Arm::processButtonPressed(int buttonPressedNow)
 {
-    switch(buttonFunction)
+    buttonPressed = buttonPressedNow;
+
+    for (int buttonFunctionKeyNumber = 0; buttonFunctionKeyNumber < 6; buttonFunctionKeyNumber++)
     {
-        case none:
-            qDebug() << "Button function: none";
-            break;
-        case first:
-            qDebug() << "Button function: first";
-            break;
-        case second:
-            qDebug() << "Button function: second";
-            break;
-        case third:
-            qDebug() << "Button function: third";
-            break;
-        case jaws:
-            qDebug() << "Button function: jaws";
-            break;
-        case all:
-            qDebug() << "Button function: all";
-            break;
-        case inverseKinematics:
-            qDebug() << "Button function: inverseKinematics";
-            break;
-        default:
-            qDebug() << "Unknown button function";
-            break;
+        if (buttonPressedNow >= 4 && buttonPressedNow <= 9)
+        {
+            if (buttonPressedNow - 4 == buttonFunctionKeyNumber)
+            {
+                buttonFunctionKeys[buttonFunctionKeyNumber].isActive = true;
+            }
+            else
+            {
+                buttonFunctionKeys[buttonFunctionKeyNumber].isActive = false;
+            }
+            emit buttonFunctionChanged(buttonFunctionKeyNumber);
+        }
     }
+
+
 }
+void Arm::onButtonFunctionIndexChanged(int index, int newIndex) {
+    // Update the button function
+    buttonFunctionKeys[index].function = static_cast<ButtonFunction>(newIndex);
 
-
+    // Emit the signal
+    emit buttonFunctionChanged(index);
+}
