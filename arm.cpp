@@ -66,7 +66,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     case Jaws:
         motorBase = motorZ + 11392;
         motorJawsRotation = -motorX+11392;
-        motorJawsClench = 2*motorY+11392;
+        motorJawsClench = (2*motorY+11392 <= 0) ? 0 : 2*motorY+11392 ;
         break;
     case All:
         motorBase = motorZ + 11392;

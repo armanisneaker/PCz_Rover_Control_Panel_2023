@@ -372,7 +372,7 @@ void MainWindow::armControlPhysical1Slot()
     });
     connArmPhysicalY = connect(joystick, &DirectInputJoystick::joystick1AxisYChanged, this, [this](int value)
     {
-        arm->containerY = value;
+        arm->containerY = 2*32768-value;
     });
     connArmPhysicalZ = connect(joystick, &DirectInputJoystick::joystick1AxisZChanged, this, [this](int value)
     {
