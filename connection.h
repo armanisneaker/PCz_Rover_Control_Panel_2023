@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QUdpSocket>
-#include <QDebug>
 #include <QTimer>
 #include <QDateTime>
 
@@ -27,10 +26,14 @@ public:
 public slots:
     bool createFrame(const QByteArray &frameDrive, const QByteArray &frameArm);
     bool sendFrame();
+    void setHostAddress(const QString &address);
+    void setHostPort(quint16 port);
 
 signals:
     void frameCreated();
     void frameSent();
+    void hostAddressChanged(const QString &address);
+    void hostPortChanged(quint16 port);
 };
 
 #endif // CONNECTION_H

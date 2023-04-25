@@ -3,9 +3,9 @@
 Arm::Arm(QObject *parent) : QObject(parent)
 {
     frame.QByteArray::clear();
-    containerX = 0;
-    containerY = 0;
-    containerZ = 0;
+    containerX = joystickCenter;
+    containerY = joystickCenter;
+    containerZ = joystickCenter;
     containerPower = 0;
     activeButtonFunction = ButtonFunction::None;
     buttonPressed = 120;
@@ -20,7 +20,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
 {
     frame.clear();
 
-    constexpr int16_t motorInitial = 11392;
+    constexpr int16_t motorInitial = 3200;
 
     int16_t motorBase = motorInitial;
     int16_t motorSegment2Middle = motorInitial;
@@ -29,12 +29,11 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     int16_t motorJawsRotation = motorInitial;
     int16_t motorJawsPosition = motorInitial;
 
-    constexpr int32_t joystickCenter = 32767;
     joyX = (x - joystickCenter) / static_cast<float>(joystickCenter);
     joyY = (y - joystickCenter) / static_cast<float>(joystickCenter);
     joyZ = (z - joystickCenter) / static_cast<float>(joystickCenter);
 
-    powerOnMotors = 100 * power;
+    powerOnMotors = 32 * power;
 
     bool outsideDeadzoneX = joyX < -deadzone || joyX > deadzone;
     bool outsideDeadzoneY = joyY < -deadzone || joyY > deadzone;
@@ -49,74 +48,108 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     case None:
         break;
     case First:
-        motorBase = motorZ + 11392;
-        motorSegment1Bottom = motorY + 11392;
-        //motorJawsRotation = motorX+11392;
+        motorSegment1Bottom = motorY+3200;
+        motorJawsPosition = 3200;
+        motorJawsClench = 3200;
+        motorSegment2Middle = 3200;
         break;
     case Second:
-        motorBase = motorZ + 11392;
-        motorSegment2Middle = -motorY+11392;
-        //motorJawsRotation = -motorX+11392;
+        motorSegment2Middle = motorY+3200;
+        motorSegment1Bottom = 3200;
+        motorJawsPosition = 3200;
+        motorJawsClench = 3200;
         break;
     case Third:
-        motorBase = motorZ + 11392;
-        motorJawsPosition = motorY+11392;
-        motorJawsRotation = -motorX+11392;
+        motorJawsPosition = motorY+3200;
+        motorJawsClench = 3200;
+        motorSegment2Middle = 3200;
+        motorSegment1Bottom = 3200;
         break;
     case Jaws:
-        motorBase = motorZ + 11392;
-        motorJawsRotation = -motorX+11392;
-        motorJawsClench = (2*motorY+11392 <= 0) ? 0 : 2*motorY+11392 ;
+        if(motorY > 10) motorJawsClench = 6400;
+        else if(motorY < -10) motorJawsClench = 0;
+        else motorJawsClench = 3200;
+        motorSegment2Middle = 3200;
+        motorSegment1Bottom = 3200;
+        motorJawsPosition = 3200;
         break;
     case All:
-        motorBase = motorZ + 11392;
+        motorBase = motorZ + 3200;
         switch(buttonPressed)
         {
         case 0:
-            motorJawsPosition = motorY+11392;
-            motorJawsClench = 11392;
-            motorSegment2Middle = 11392;
-            motorSegment1Bottom = 11392;
+            motorJawsPosition = motorY+3200;
+            motorJawsClench = 3200;
+            motorSegment2Middle = 3200;
+            motorSegment1Bottom = 3200;
             break;
         case 1:
-            motorSegment1Bottom = motorY+11392;
-            motorJawsPosition = 11392;
-            motorJawsClench = 11392;
-            motorSegment2Middle = 11392;
+            motorSegment1Bottom = motorY+3200;
+            motorJawsPosition = 3200;
+            motorJawsClench = 3200;
+            motorSegment2Middle = 3200;
             break;
         case 2:
-            motorSegment2Middle = motorY+11392;
-            motorSegment1Bottom = 11392;
-            motorJawsPosition = 11392;
-            motorJawsClench = 11392;
+            motorSegment2Middle = -motorY+3200;
+            motorSegment1Bottom = 3200;
+            motorJawsPosition = 3200;
+            motorJawsClench = 3200;
             break;
         case 3:
-            motorJawsClench = 10*motorY+11392;
-            motorSegment2Middle = 11392;
-            motorSegment1Bottom = 11392;
-            motorJawsPosition = 11392;
+            if(motorY > 10) motorJawsClench = 6400;
+            else if(motorY < -10) motorJawsClench = 0;
+            else motorJawsClench = 3200;
+            motorSegment2Middle = 3200;
+            motorSegment1Bottom = 3200;
+            motorJawsPosition = 3200;
             break;
         default:
-            motorSegment1Bottom = motorY+11392;
-            motorSegment2Middle = -motorY+11392;
-            motorJawsPosition = 11392;
-            motorJawsClench = 11392;
+            motorSegment1Bottom = motorY+3200;
+             motorSegment2Middle = -motorY+3200;
+            motorJawsPosition = 3200;
+            motorJawsClench = 3200;
             break;
         }
-        motorJawsRotation = -motorX+11392;
+        motorJawsRotation = -motorX+3200;
         break;
     default:
         break;
     }
 
-    if(motorJawsClench>22784) motorJawsClench = 22784;
-    if(motorJawsClench<-22784) motorJawsClench = -22784;
+    if(motorJawsClench>6400) motorJawsClench = 6400;
+    if(motorJawsClench<0) motorJawsClench = 0;
 
     QDataStream stream(&frame, QIODevice::WriteOnly);
     stream << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
 
-    qDebug() << x << y << z << power << buttonFunction;
-    qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
+    //qDebug() << x << y << z << power << buttonFunction;
+    //qDebug() << motorBase << motorSegment2Middle << motorSegment1Bottom <<motorJawsClench << motorJawsRotation << motorJawsPosition;
+
+    // Emit signals if the new value is different from the previous value
+       if (motorBase != prevMotorBase) {
+           emit motorBaseChanged(motorBase);
+           prevMotorBase = motorBase;
+       }
+       if (motorSegment1Bottom != prevMotorSegment1Bottom) {
+           emit motorFirstChanged(motorSegment1Bottom);
+           prevMotorSegment1Bottom = motorSegment1Bottom;
+       }
+       if (motorSegment2Middle != prevMotorSegment2Middle) {
+           emit motorSecondChanged(motorSegment2Middle);
+           prevMotorSegment2Middle = motorSegment2Middle;
+       }
+       if (motorJawsPosition != prevMotorJawsPosition) {
+           emit motorThirdChanged(motorJawsPosition);
+           prevMotorJawsPosition = motorJawsPosition;
+       }
+       if (motorJawsRotation != prevMotorJawsRotation) {
+           emit motorJawsChanged(motorJawsRotation);
+           prevMotorJawsRotation = motorJawsRotation;
+       }
+       if (motorJawsClench != prevMotorJawsClench) {
+           emit motorJawsClenchChanged(motorJawsClench);
+           prevMotorJawsClench = motorJawsClench;
+       }
 
 
     return true;
@@ -141,8 +174,6 @@ void Arm::processButtonPressed(int buttonPressedNow)
             emit buttonFunctionChanged(buttonFunctionKeyNumber);
         }
     }
-
-
 }
 void Arm::onButtonFunctionIndexChanged(int index, int newIndex) {
     // Update the button function

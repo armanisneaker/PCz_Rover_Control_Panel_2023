@@ -199,6 +199,16 @@ void DirectInputJoystick::processDeviceInput(int deviceIndex, DIJOYSTATE &curren
                 else
                     emit joystick2ButtonStateChanged(button, currentStatePressed);
 
+                // Emit button released signal
+                if ((previousStatePressed && !currentStatePressed) && button >=0 && button <=3)
+                {
+                    qDebug() <<button;
+                    if (deviceIndex == 0)
+                        emit joystick1ButtonReleased(button);
+                    else
+                        emit joystick2ButtonReleased(button);
+                }
+
                 m_previousDeviceState[deviceIndex].rgbButtons[button] = currentState.rgbButtons[button];
             }
         }

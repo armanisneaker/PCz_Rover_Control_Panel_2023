@@ -8,6 +8,8 @@ Drive::Drive(QObject *parent) : QObject(parent)
     containerX = 32767;
     containerY = 32767;
     containerPower = 0;
+
+    wheelDiameter = 0.035;
 }
 
 bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
@@ -28,10 +30,12 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
         if (leftSpeed != 3200) {
             leftSpeed = 3200;
             emit leftSpeedChanged(leftSpeed);
+            emit roverSpeedChanged(0);
         }
         if (rightSpeed != 3200) {
             rightSpeed = 3200;
             emit rightSpeedChanged(rightSpeed);
+            emit roverSpeedChanged(0);
         }
     }
     else {
@@ -42,6 +46,19 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
         int16_t newRightSpeed = qBound(0, static_cast<int>((v - w) * 3200 / MAX_SPEED + 3200), 6400);
         int16_t newLeftSpeed = qBound(0, static_cast<int>((v + w) * 3200 / MAX_SPEED + 3200), 6400);
 
+        if (newRightSpeed != rightSpeed || newLeftSpeed != leftSpeed) {
+            double wheelCircumference = M_PI * wheelDiameter;
+
+            double actualRightSpeed = ((newRightSpeed - 3200) * MAX_SPEED) / 3200;
+            double actualLeftSpeed = ((newLeftSpeed - 3200) * MAX_SPEED) / 3200;
+
+            double avgWheelSpeed = (actualRightSpeed + actualLeftSpeed) / 2.0;
+            double roverSpeedKmh = (avgWheelSpeed * wheelCircumference * 60) / (1000);
+
+            emit roverSpeedChanged(abs(roverSpeedKmh));
+        }
+
+
         // Emit signals if the left or right speed has changed
         if (newRightSpeed != rightSpeed) {
             rightSpeed = newRightSpeed;
@@ -51,6 +68,8 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
             leftSpeed = newLeftSpeed;
             emit leftSpeedChanged(leftSpeed);
         }
+
+
     }
 
     // Pack the wheel speeds into a QByteArray

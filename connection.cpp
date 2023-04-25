@@ -55,3 +55,22 @@ bool Connection::sendFrame()
         return false;
     }
 }
+
+void Connection::setHostAddress(const QString &address)
+{
+    QHostAddress newAddress(address);
+    if (newAddress != hostAdress)
+    {
+        hostAdress = newAddress;
+        emit hostAddressChanged(address);
+    }
+}
+
+void Connection::setHostPort(quint16 port)
+{
+    if (port != hostPort)
+    {
+        hostPort = port;
+        emit hostPortChanged(port);
+    }
+}

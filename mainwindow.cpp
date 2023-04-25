@@ -5,7 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    setFixedSize(1280, 720);
+
     setWindowTitle("PCz Rover Control Panel 2023");
 
     initializeClasses();
@@ -125,8 +125,10 @@ void MainWindow::initializeClasses()
     arm = new Arm(this);
     drive = new Drive(this);
     joystickWidget = new JoystickWidget(this);
-    joystickWidget->setGeometry(326, 150, 250, 250);
+    joystickWidget->setGeometry(27, 485, 250, 250);
     joystick = new DirectInputJoystick(this);
+
+    printToUi("Classes initialized");
 }
 
 void MainWindow::initializeTimers()
@@ -138,6 +140,8 @@ void MainWindow::initializeTimers()
     frameStatusTimer = new QTimer(this);
     lastFrameSentTime = new QElapsedTimer();
     joystickPhysicalTimer = new QTimer(this);
+
+    printToUi("Timers initialized");
 }
 
 void MainWindow::startTimers()
@@ -145,9 +149,11 @@ void MainWindow::startTimers()
     uiTimer->start(1000 / 60);
     driveTimer->start(1000 / 60);
     armTimer->start(1000 / 60);
-    connectionTimer->start(33);
+    connectionTimer->start(10);
     joystickPhysicalTimer->start(500);
     lastFrameSentTime->start();
+
+    printToUi("Timers started");
 }
 
 void MainWindow::initializeBusiness()
@@ -158,11 +164,16 @@ void MainWindow::initializeBusiness()
 
     ui->label_frames_sent_count->setStyleSheet("background-color: rgb(160,20,40);");
     updateButtonColors();
+    ui->comboBox_arm_control->setCurrentIndex(1);
+    ui->comboBox_drive_control->setCurrentIndex(1);
+
+    printToUi("Business initialized");
 }
 
 void MainWindow::initializeUi()
 {
     setupUiConnections();
+    printToUi("UI initialized");
 }
 
 void MainWindow::setupBusinessConnections()
@@ -229,7 +240,6 @@ void MainWindow::setupBusinessConnections()
     connDrivePhysicalX = connect(joystickWidget, &JoystickWidget::xChanged, this, [this](float value)
     {
         drive->containerX = (value + 1.0) *32767;
-        qDebug() << value;
     });
     connDrivePhysicalY = connect(joystickWidget, &JoystickWidget::yChanged, this, [this](float value)
     {
@@ -240,6 +250,30 @@ void MainWindow::setupBusinessConnections()
     connDrivePhysicalPower = connect(ui->horizontalSlider_power_drive, &QSlider::valueChanged, this, [this](int value)
     {
         drive->containerPower = value;
+    });
+
+    connect(ui->lineEdit_IP_adress, &QLineEdit::editingFinished, this,[this]{
+        connection->setHostAddress(ui->lineEdit_IP_adress->text());
+    } );
+    connect(ui->lineEdit_port, &QLineEdit::editingFinished, this, [this]{
+        bool conversionSuccessful;
+        int integerValue = ui->lineEdit_port->text().toInt(&conversionSuccessful);
+        connection->hostPortChanged(ui->lineEdit_port->text().toInt(&conversionSuccessful));
+        if (conversionSuccessful)
+        {
+            if (integerValue >= std::numeric_limits<qint16>::min() && integerValue <= std::numeric_limits<qint16>::max())
+            {
+                qint16 convertedValue = static_cast<qint16>(integerValue);
+            }
+            else
+            {
+                 printToUi("The PORT input number is out of the qint16 range.");
+            }
+        }
+        else
+        {
+            qDebug() << "Failed to convert QString to qint16 for PORT.";
+        }
     });
 }
 
@@ -289,6 +323,10 @@ void MainWindow::setupUiConnections()
     {
         ui->label_y_drive->setText(QString::number(value));
     });
+    connect(ui->horizontalSlider_power_drive, &QSlider::valueChanged, this, [=](int value)
+    {
+        ui->spinBox_power_drive->setValue(value);
+    });
 
     connect(ui->horizontalSlider_power_arm, &QSlider::valueChanged, this, [=](int value)
     {
@@ -310,13 +348,23 @@ void MainWindow::setupUiConnections()
     {
         ui->label_z_arm->setText(QString::number(value));
     });
-
-
+    connect(arm, &Arm::motorBaseChanged, ui->progressBar_motor_base, &QProgressBar::setValue);
+    connect(arm, &Arm::motorFirstChanged, ui->progressBar_motor_first, &QProgressBar::setValue);
+    connect(arm, &Arm::motorSecondChanged, ui->progressBar_motor_second, &QProgressBar::setValue);
+    connect(arm, &Arm::motorThirdChanged, ui->progressBar_motor_third, &QProgressBar::setValue);
+    connect(arm, &Arm::motorJawsChanged, ui->progressBar_motor_jaws, &QProgressBar::setValue);
+    connect(arm, &Arm::motorJawsClenchChanged, ui->progressBar_motor_jaws_clench, &QProgressBar::setValue);
     // Frame sent count update
     connect(connection, &Connection::frameSent, this, [=]()
     {
         ui->label_frames_sent_count->setText(QString::number(connection->framesSent));
     });
+
+    connect(drive, &Drive::roverSpeedChanged, this, [this](int value){
+        ui->lcdNumber_rover_speed->display(value);
+        ui->dial_rover_speed->setValue(value);
+        //printToUi(QString::number(value));
+    } );
 }
 
 void MainWindow::connectionSlot()
@@ -337,6 +385,7 @@ void MainWindow::armControlVirtualSlot()
     disconnect(connArmPhysicalZ);
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
+    disconnect(connArmButtonRelease);
 
     connArmPhysicalX = connect(ui->horizontalSlider_x_arm, &QSlider::sliderMoved, this, [this](int value)
     {
@@ -344,11 +393,11 @@ void MainWindow::armControlVirtualSlot()
     });
     connArmPhysicalY = connect(ui->horizontalSlider_y_arm, &QSlider::sliderMoved, this, [this](int value)
     {
-        arm->containerY = value;
+        arm->containerY = (value + 100) * 327.67;
     });
     connArmPhysicalZ = connect(ui->horizontalSlider_z_arm, &QSlider::sliderMoved, this, [this](int value)
     {
-        arm->containerZ = value;
+        arm->containerZ = (value + 100) * 327.67;
     });
     connArmPhysicalPower = connect(ui->horizontalSlider_power_arm, &QSlider::sliderMoved, this, [this](int value)
     {
@@ -364,6 +413,7 @@ void MainWindow::armControlPhysical1Slot()
     disconnect(connArmPhysicalZ);
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
+    disconnect(connArmButtonRelease);
 
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, this, [this](int value)
@@ -387,6 +437,10 @@ void MainWindow::armControlPhysical1Slot()
         arm->buttonPressed = button;
         arm->processButtonPressed(button);
     });
+    connArmButtonRelease = connect(joystick, &DirectInputJoystick::joystick1ButtonReleased, this, [this]{
+        arm->buttonPressed = 8;
+        arm->processButtonPressed(8);
+    });
 }
 
 void MainWindow::armControlPhysical2Slot()
@@ -397,6 +451,7 @@ void MainWindow::armControlPhysical2Slot()
     disconnect(connArmPhysicalZ);
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
+    disconnect(connArmButtonRelease);
 
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, this, [this](int value)
@@ -418,6 +473,10 @@ void MainWindow::armControlPhysical2Slot()
     connArmPhysicalButton = connect(joystick, &DirectInputJoystick::joystick2ButtonStateChanged, this, [this](int button, bool pressed)
     {
         arm->buttonPressed = button;
+    });
+    connArmButtonRelease = connect(joystick, &DirectInputJoystick::joystick2ButtonReleased, this, [this]{
+        arm->buttonPressed = 8;
+        arm->processButtonPressed(8);
     });
 }
 
@@ -480,7 +539,6 @@ void MainWindow::driveControlVirtualSlot()
     connDrivePhysicalX = connect(joystickWidget, &JoystickWidget::xChanged, this, [this](float value)
     {
         drive->containerX = (value + 1.0) * 32767;
-        qDebug() << value;
     });
     connDrivePhysicalY = connect(joystickWidget, &JoystickWidget::yChanged, this, [this](float value)
     {
@@ -533,6 +591,11 @@ void MainWindow::driveControlPhysical2Slot()
     updateUiDrive(drive->containerX, drive->containerY, drive->containerPower);
 }
 
+void MainWindow::printToUi(QString text)
+{
+    ui->textBrowser_printer->append(QDateTime::currentDateTime().toString("HH:mm:ss") + " " + text);
+}
+
 void MainWindow::deleteClasses()
 {
     delete connection;
@@ -552,3 +615,4 @@ void MainWindow::deleteTimers()
     delete lastFrameSentTime;
     delete joystickPhysicalTimer;
 }
+

@@ -31,6 +31,7 @@ private:
     int16_t rightSpeed;
     int adjustedX;
     int adjustedY;
+    double wheelDiameter;
 
 public slots:
     bool calculateWheelsSpeeds(const int x, const int y, const int power);
@@ -40,6 +41,7 @@ signals:
     void controlPhysicalJoystick2();
     void leftSpeedChanged(int16_t leftSpeed);
     void rightSpeedChanged(int16_t rightSpeed);
+    void roverSpeedChanged(double speedKmh);
 };
 
 #endif // DRIVE_H

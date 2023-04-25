@@ -31,6 +31,8 @@ signals:
     void joystick1ButtonStateChanged(int button, bool pressed);
     void joystick2ButtonStateChanged(int button, bool pressed);
     void connectedJoystickCountChanged(int count);
+    void joystick1ButtonReleased(int button);
+    void joystick2ButtonReleased(int button);
 
 
 private:

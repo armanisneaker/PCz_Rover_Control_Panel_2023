@@ -27,7 +27,7 @@ public:
 
     void updateUiArm(int containerX, int containerY, int containerZ, int containerPower);
     void updateUiDrive(int containerX, int containerY, int containerPower);
-
+    void printToUi(QString text);
 
 
 
@@ -58,6 +58,7 @@ private:
     QMetaObject::Connection connArmPhysicalZ;
     QMetaObject::Connection  connArmPhysicalPower;
     QMetaObject::Connection  connArmPhysicalButton;
+    QMetaObject::Connection connArmButtonRelease;
 
     QMetaObject::Connection connDriveTimer;
     QMetaObject::Connection connDrivePhysicalX;

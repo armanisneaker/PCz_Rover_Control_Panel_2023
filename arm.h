@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QIODevice>
-#include <QDebug>
 
 class Arm : public QObject
 {
@@ -40,6 +39,7 @@ public:
     int containerPower;
     ButtonFunction activeButtonFunction;
     int buttonPressed;
+    static constexpr int32_t joystickCenter = 32767;
 
 private:
 
@@ -50,6 +50,13 @@ private:
     int16_t motorJawsPosition;
     int16_t motorJawsRotation;
     int16_t motorJawsClench;
+
+    int16_t prevMotorBase;
+    int16_t prevMotorSegment1Bottom;
+    int16_t prevMotorSegment2Middle;
+    int16_t prevMotorJawsClench;
+    int16_t prevMotorJawsRotation;
+    int16_t prevMotorJawsPosition;
 
     double joyX;
     double joyY;
@@ -72,6 +79,12 @@ signals:
     void controlPhysicalJoystick1();
     void controlPhysicalJoystick2();
     void buttonFunctionChanged(int index);
+    void motorBaseChanged(int value);
+    void motorFirstChanged(int value);
+    void motorSecondChanged(int value);
+    void motorThirdChanged(int value);
+    void motorJawsChanged(int value);
+    void motorJawsClenchChanged(int value);
 };
 
 #endif // ARM_H
