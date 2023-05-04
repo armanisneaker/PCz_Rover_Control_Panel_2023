@@ -69,13 +69,13 @@ QPointF MapModule::addPoint(double posX = 0.0000000000000, double posY = 0.00000
     int ConversionX = round((size_of_map/2) + (distanceX*KilometersForOneDegree*100000)); //*10000 ponieważ kilometry zmieniamy na centymetry
     int ConversionY = round((size_of_map/2) + (distanceY*KilometersForOneDegree*100000)); //*10000 ponieważ kilometry zmieniamy na centymetry
 
-    qDebug() << "ConversionX: " << ConversionX << "   " << "ConversionY: " << ConversionY;
+    //qDebug() << "ConversionX: " << ConversionX << "   " << "ConversionY: " << ConversionY;
     item.push_back(new QGraphicsPixmapItem(QPixmap(redPointPath)));
 
 
     if(item[item.size()-1] == nullptr)
     {
-        qDebug() << "Chuj w dupie a nie biznes";
+        //qDebug() << "Chuj w dupie a nie biznes";
     }
     else
     {
@@ -352,7 +352,7 @@ void MapModule::UpdatePosition(double temp_X, double temp_Y)//temp x i y są jak
     int difference_Y  = distanceY*KilometersForOneDegree*100000; //*10000 ponieważ kilometry zmieniamy na centymetry
 
 
-    qDebug() << "difference_X: "<< difference_X <<" difference_Y: "<< difference_Y;
+    //qDebug() << "difference_X: "<< difference_X <<" difference_Y: "<< difference_Y;
 
 
     //przesunięcie wsztkich punktów względem środka (50000,50000) (w momencie kiedy to piszę 12.10.2022)

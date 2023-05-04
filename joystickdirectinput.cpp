@@ -202,7 +202,7 @@ void DirectInputJoystick::processDeviceInput(int deviceIndex, DIJOYSTATE &curren
                 // Emit button released signal
                 if ((previousStatePressed && !currentStatePressed) && button >=0 && button <=3)
                 {
-                    qDebug() <<button;
+                    //qDebug() <<button;
                     if (deviceIndex == 0)
                         emit joystick1ButtonReleased(button);
                     else

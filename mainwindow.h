@@ -65,12 +65,14 @@ private:
     QTimer *connectionTimer;
     QTimer *armTimer;
     QTimer *driveTimer;
-    QTimer *uiTimer;
+    QTimer *mapTimer;
     QTimer* frameStatusTimer;
     QTimer* joystickPhysicalTimer;
     QElapsedTimer* lastFrameSentTime;
 
     int timeSinceLastFrameSent;
+    QElapsedTimer *lastFrameReceivedTime;
+    int timeSinceLastFrameReceived;
 
     QMetaObject::Connection connConnectionTimer;
     QMetaObject::Connection connArmTimer;
@@ -108,6 +110,7 @@ private:
 
 private slots:
     void updateFrameStatusLabel();
+    void updateFrameReceivedStatusLabel();
     void on_comboBox_drive_control_currentTextChanged(const QString &arg1);
     void on_comboBox_arm_control_currentTextChanged(const QString &arg1);
     void on_horizontalSlider_x_arm_sliderReleased();

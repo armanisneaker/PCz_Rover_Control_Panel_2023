@@ -55,6 +55,27 @@ void MainWindow::updateFrameStatusLabel()
     ui->label_frames_sent_count->setStyleSheet(color);
 }
 
+void MainWindow::updateFrameReceivedStatusLabel()
+{
+    timeSinceLastFrameReceived = lastFrameReceivedTime->elapsed();
+    QString color;
+
+    if (timeSinceLastFrameReceived < 500)
+    {
+        color = "background-color: rgb(66,158,88);";
+    }
+    else if (timeSinceLastFrameReceived < 3000)
+    {
+        color = "background-color: rgb(255,181,10);";
+    }
+    else
+    {
+        color = "background-color: rgb(160,20,40);";
+    }
+
+    ui->label_frames_received_count->setStyleSheet(color);
+}
+
 void MainWindow::on_comboBox_drive_control_currentTextChanged(const QString &arg1)
 {
     if (arg1 == "Virtual Joystick") emit drive->controlVirtualJoystick();
@@ -152,12 +173,13 @@ void MainWindow::initializeClasses()
 
 void MainWindow::initializeTimers()
 {
-    uiTimer = new QTimer(this);
+    mapTimer = new QTimer(this);
     connectionTimer = new QTimer(this);
     armTimer = new QTimer(this);
     driveTimer = new QTimer(this);
     frameStatusTimer = new QTimer(this);
     lastFrameSentTime = new QElapsedTimer();
+    lastFrameReceivedTime = new QElapsedTimer();
     joystickPhysicalTimer = new QTimer(this);
 
     printToUi("Timers initialized");
@@ -165,12 +187,13 @@ void MainWindow::initializeTimers()
 
 void MainWindow::startTimers()
 {
-    uiTimer->start(1000 / 60);
+    mapTimer->start(1000 / 5);
     driveTimer->start(1000 / 60);
     armTimer->start(1000 / 60);
     connectionTimer->start(1000 / 60);
     joystickPhysicalTimer->start(500);
     lastFrameSentTime->start();
+    lastFrameReceivedTime->start();
 
     printToUi("Timers started");
 }
@@ -193,6 +216,7 @@ void MainWindow::initializeUi()
 {
     setupUiConnections();
     printToUi("UI initialized");
+    ui->label_current_ip->setText(connection->currentIP);
 }
 
 void MainWindow::setupBusinessConnections()
@@ -291,8 +315,12 @@ void MainWindow::setupBusinessConnections()
         }
         else
         {
-            qDebug() << "Failed to convert QString to qint16 for PORT.";
+            printToUi("Failed to convert QString to qint16 for PORT.");
         }
+    });
+    connect(mapTimer, &QTimer::timeout, this, [this]{
+        mapmodule->UpdatePosition(connection->longitude, connection->latitude);
+        mapmodule->rover.rotate(connection->azimuth);
     });
 }
 
@@ -305,6 +333,7 @@ void MainWindow::setupUiConnections()
     });
     // Frame status timer connection
     connect(frameStatusTimer, &QTimer::timeout, this, &MainWindow::updateFrameStatusLabel);
+    connect(frameStatusTimer, &QTimer::timeout, this, &MainWindow::updateFrameReceivedStatusLabel);
     // Connection frame sent handling
     connect(connection, &Connection::frameSent, this, [=]()
     {
@@ -315,6 +344,16 @@ void MainWindow::setupUiConnections()
         {
             frameStatusTimer->start(100);
         } });
+    connect(connection, &Connection::frameReceived, this, [this]{
+        ui->label_frames_received_count->setText(QString::number(connection->framesReceived));
+        lastFrameReceivedTime->restart();
+
+        if (!frameStatusTimer->isActive())
+        {
+            frameStatusTimer->start(100);
+        }
+    });
+
 
     // UI timer connections
     // Assuming that drive is a pointer to a Drive object and is properly initialized
@@ -373,11 +412,7 @@ void MainWindow::setupUiConnections()
     connect(arm, &Arm::motorThirdChanged, ui->progressBar_motor_third, &QProgressBar::setValue);
     connect(arm, &Arm::motorJawsChanged, ui->progressBar_motor_jaws, &QProgressBar::setValue);
     connect(arm, &Arm::motorJawsClenchChanged, ui->progressBar_motor_jaws_clench, &QProgressBar::setValue);
-    // Frame sent count update
-    connect(connection, &Connection::frameSent, this, [=]()
-    {
-        ui->label_frames_sent_count->setText(QString::number(connection->framesSent));
-    });
+
 
     connect(drive, &Drive::roverSpeedChanged, this, [this](int value){
         ui->lcdNumber_rover_speed->display(value);
@@ -385,7 +420,14 @@ void MainWindow::setupUiConnections()
         //printToUi(QString::number(value));
     } );
     connect(connection, &Connection::frameFailedToBeSent, this, [this](int value){
-        printToUi("Frame failed to be sent: bytes:" + QString::number(value));});
+        //printToUi("Frame failed to be sent: bytes:" + QString::number(value));
+    });
+    connect(mapTimer, &QTimer::timeout, this, [this]{
+        ui->graphicsView->centerOn(mapmodule->size_of_map/2,mapmodule->size_of_map/2);
+        ui->lineEditPosXRover->setText(QString::number(connection->longitude, 'f', 10));
+        ui->lineEditPosYRover->setText(QString::number(connection->latitude, 'f', 10));
+        ui->lineEditRotate->setText(QString::number(connection->azimuth));
+    });
 }
 
 void MainWindow::connectionSlot()
@@ -411,7 +453,7 @@ void MainWindow::armControlVirtualSlot()
     disconnect(connArmReleasedY);
     disconnect(connArmReleasedZ);
 
-xReleased = false;
+        xReleased = false;
         yReleased = false;
         zReleased = false;
 
@@ -659,7 +701,7 @@ void MainWindow::deleteClasses()
 
 void MainWindow::deleteTimers()
 {
-    delete uiTimer;
+    delete mapTimer;
     delete connectionTimer;
     delete armTimer;
     delete driveTimer;
@@ -667,7 +709,6 @@ void MainWindow::deleteTimers()
     delete lastFrameSentTime;
     delete joystickPhysicalTimer;
 }
-
 
 void MainWindow::on_pushButtonUnZoom_clicked()
 {

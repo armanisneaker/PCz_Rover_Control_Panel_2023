@@ -22,7 +22,7 @@ void MainWindow::on_pushButton_add_pos_clicked()
     navigation.itemRow[navigation.index_number]->setText(QString::number(navigation.pos_X[navigation.index_number],'g',12));
     navigation.itemColumn[navigation.index_number]->setText(QString::number(navigation.pos_Y[navigation.index_number],'g',12));
 
-    qDebug() << "Precision: " << navigation.pos_X[navigation.index_number];
+    //qDebug() << "Precision: " << navigation.pos_X[navigation.index_number];
 
 
     ui->tableWidget_nav->setItem( navigation.index_number, 0, navigation.itemID[navigation.index_number]);
