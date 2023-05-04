@@ -25,7 +25,7 @@ public:
 
     void updateButtonFunctionColors();
 
-    void updateUiArm(int containerX, int containerY, int containerZ, int containerPower);
+    void updateUiArm(int containerX, int containerY, int containerZ, int containerPower, bool xReleased, bool yReleased, bool zReleased);
     void updateUiDrive(int containerX, int containerY, int containerPower);
     void printToUi(QString text);
 
@@ -59,6 +59,9 @@ private:
     QMetaObject::Connection  connArmPhysicalPower;
     QMetaObject::Connection  connArmPhysicalButton;
     QMetaObject::Connection connArmButtonRelease;
+    QMetaObject::Connection connArmReleasedX;
+    QMetaObject::Connection connArmReleasedY;
+    QMetaObject::Connection connArmReleasedZ;
 
     QMetaObject::Connection connDriveTimer;
     QMetaObject::Connection connDrivePhysicalX;
@@ -75,6 +78,10 @@ private:
     unsigned int numJoysticksOld = 0;
     int joystickNumber;
     float physicalJoystickMaxValue = 65535;
+
+    bool xReleased = false;
+       bool yReleased = false;
+       bool zReleased = false;
 
 
 

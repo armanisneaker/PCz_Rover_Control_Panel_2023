@@ -5,6 +5,8 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QDateTime>
+#include <QDebug>
+#include <QDataStream>
 
 class Connection : public QObject
 {
@@ -16,6 +18,7 @@ private:
 
     QByteArray frame;
     int bytesSentInLastFrame;
+    const char DEFAULT_VALUE = 0;
 
 public:
     explicit Connection(QObject *parent = nullptr);
@@ -34,6 +37,7 @@ signals:
     void frameSent();
     void hostAddressChanged(const QString &address);
     void hostPortChanged(quint16 port);
+    void frameFailedToBeSent(int value);
 };
 
 #endif // CONNECTION_H

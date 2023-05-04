@@ -6,6 +6,7 @@ Connection::Connection(QObject *parent)
     hostAdress = QHostAddress("192.168.1.10");
     hostPort = 5150;
     frame.resize(320);
+    frame.fill(DEFAULT_VALUE);
     framesSent = 0;
 
     socket = new QUdpSocket(this);
@@ -28,15 +29,25 @@ bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& fra
         return false;
     }
 
-    // Copy the frameDrive data to the appropriate location in the frame
-    memcpy(frame.data() + 4, frameDrive.constData(), frameDrive.size());
+    frame.fill(DEFAULT_VALUE);
 
-    // Copy the frameArm data to the appropriate location in the frame
-    memcpy(frame.data() + 67, frameArm.constData(), frameArm.size());
+    qDebug() << frameDrive + "\n";
+    qDebug() << frameArm + "\n";
+
+    QDataStream stream(&frame, QIODevice::WriteOnly);
+
+    // Move the stream position to the start of the frameDrive data location
+    stream.device()->seek(4);
+    stream.writeRawData(frameDrive.constData(), frameDrive.size());
+
+    // Move the stream position to the start of the frameArm data location
+    stream.device()->seek(67);
+    stream.writeRawData(frameArm.constData(), frameArm.size());
 
     emit frameCreated();
     return true;
 }
+
 
 bool Connection::sendFrame()
 {
@@ -51,9 +62,11 @@ bool Connection::sendFrame()
     }
     else
     {
-        qDebug() << QDateTime::currentDateTime().toString("HH:mm:ss.zzz") << "Frame not sent. It's "<<bytesSentInLastFrame<<" bytes long.";
+        emit frameFailedToBeSent(bytesSentInLastFrame);
+         qDebug() << frame << "\n" << frame.size();
         return false;
     }
+
 }
 
 void Connection::setHostAddress(const QString &address)

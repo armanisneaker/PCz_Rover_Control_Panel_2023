@@ -72,6 +72,11 @@ bool Drive::calculateWheelsSpeeds(const int x, const int y, const int power)
 
     }
 
+    if(rightSpeed > 6300) rightSpeed = 6300;
+    if(rightSpeed < 100) rightSpeed = 100;
+    if(leftSpeed > 6300) leftSpeed = 6300;
+    if(leftSpeed < 100) leftSpeed = 100;
+
     // Pack the wheel speeds into a QByteArray
     QDataStream stream(&frame, QIODevice::WriteOnly);
     stream << (qint16)rightSpeed << (qint16)rightSpeed << (qint16)rightSpeed

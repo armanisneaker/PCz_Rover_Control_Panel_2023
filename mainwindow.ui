@@ -750,10 +750,10 @@ QSlider
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>
@@ -801,10 +801,10 @@ QProgressBar::chunk {
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>
@@ -852,10 +852,10 @@ QProgressBar::chunk {
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>
@@ -903,10 +903,10 @@ QProgressBar::chunk {
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>
@@ -954,10 +954,10 @@ QProgressBar::chunk {
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>
@@ -1005,10 +1005,10 @@ QProgressBar::chunk {
      <property name="styleSheet">
       <string notr="true">QProgressBar {
     border: 1px solid grey;
-    background-color: rgba(235, 0, 0, 150);
+    background-color: rgb(51, 153, 255);
 }
 QProgressBar::chunk {
-    background-color: green;
+    background-color: rgb(255, 255, 102);
     width: 1px;
 }
 </string>

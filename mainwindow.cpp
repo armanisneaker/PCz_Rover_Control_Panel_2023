@@ -83,13 +83,21 @@ void MainWindow::on_horizontalSlider_y_drive_sliderReleased()
     ui->horizontalSlider_y_drive->setValue(0);
 }
 
-void MainWindow::updateUiArm(int containerX, int containerY, int containerZ, int containerPower)
+void MainWindow::updateUiArm(int containerX, int containerY, int containerZ, int containerPower, bool xReleased, bool yReleased, bool zReleased)
 {
-    ui->horizontalSlider_x_arm->setValue(containerX / 327.67 - 100);
-    ui->horizontalSlider_y_arm->setValue(containerY / 327.67 - 100);
-    ui->horizontalSlider_z_arm->setValue(containerZ / 327.67 - 100);
+    if (!xReleased) {
+        ui->horizontalSlider_x_arm->setValue(containerX / 327.67 - 100);
+    }
+    if (!yReleased) {
+        ui->horizontalSlider_y_arm->setValue(containerY / 327.67 - 100);
+    }
+    if (!zReleased) {
+        ui->horizontalSlider_z_arm->setValue(containerZ / 327.67 - 100);
+    }
     ui->horizontalSlider_power_arm->setValue(containerPower);
 }
+
+
 
 void MainWindow::updateUiDrive(int containerX, int containerY, int containerPower)
 {
@@ -149,7 +157,7 @@ void MainWindow::startTimers()
     uiTimer->start(1000 / 60);
     driveTimer->start(1000 / 60);
     armTimer->start(1000 / 60);
-    connectionTimer->start(10);
+    connectionTimer->start(1000 / 60);
     joystickPhysicalTimer->start(500);
     lastFrameSentTime->start();
 
@@ -165,7 +173,7 @@ void MainWindow::initializeBusiness()
     ui->label_frames_sent_count->setStyleSheet("background-color: rgb(160,20,40);");
     updateButtonColors();
     ui->comboBox_arm_control->setCurrentIndex(1);
-    ui->comboBox_drive_control->setCurrentIndex(1);
+    ui->comboBox_drive_control->setCurrentIndex(2);
 
     printToUi("Business initialized");
 }
@@ -365,6 +373,8 @@ void MainWindow::setupUiConnections()
         ui->dial_rover_speed->setValue(value);
         //printToUi(QString::number(value));
     } );
+    connect(connection, &Connection::frameFailedToBeSent, this, [this](int value){
+        printToUi("Frame failed to be sent: bytes:" + QString::number(value));});
 }
 
 void MainWindow::connectionSlot()
@@ -375,7 +385,7 @@ void MainWindow::connectionSlot()
 void MainWindow::armSlot()
 {
     arm->calculateSegmentsSpeeds(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, arm->activeButtonFunction, arm->buttonPressed);
-    updateUiArm(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower);
+    updateUiArm(arm->containerX, arm->containerY, arm->containerZ, arm->containerPower, xReleased, yReleased, zReleased);
 }
 
 void MainWindow::armControlVirtualSlot()
@@ -386,23 +396,48 @@ void MainWindow::armControlVirtualSlot()
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
     disconnect(connArmButtonRelease);
+    disconnect(connArmReleasedX);
+    disconnect(connArmReleasedY);
+    disconnect(connArmReleasedZ);
 
-    connArmPhysicalX = connect(ui->horizontalSlider_x_arm, &QSlider::sliderMoved, this, [this](int value)
-    {
-        arm->containerX = (value + 100) * 327.67;
-    });
-    connArmPhysicalY = connect(ui->horizontalSlider_y_arm, &QSlider::sliderMoved, this, [this](int value)
-    {
-        arm->containerY = (value + 100) * 327.67;
-    });
-    connArmPhysicalZ = connect(ui->horizontalSlider_z_arm, &QSlider::sliderMoved, this, [this](int value)
-    {
-        arm->containerZ = (value + 100) * 327.67;
-    });
-    connArmPhysicalPower = connect(ui->horizontalSlider_power_arm, &QSlider::sliderMoved, this, [this](int value)
-    {
-        arm->containerPower = value;
-    });
+xReleased = false;
+        yReleased = false;
+        zReleased = false;
+
+        connArmPhysicalX = connect(ui->horizontalSlider_x_arm, &QSlider::sliderMoved, this, [this](int value)
+        {
+            xReleased = false;
+            arm->containerX = (value + 100) * 327.67;
+        });
+        connArmPhysicalY = connect(ui->horizontalSlider_y_arm, &QSlider::sliderMoved, this, [this](int value)
+        {
+            yReleased = false;
+            arm->containerY = (value + 100) * 327.67;
+        });
+        connArmPhysicalZ = connect(ui->horizontalSlider_z_arm, &QSlider::sliderMoved, this, [this](int value)
+        {
+            zReleased = false;
+            arm->containerZ = (value + 100) * 327.67;
+        });
+        connArmPhysicalPower = connect(ui->horizontalSlider_power_arm, &QSlider::sliderMoved, this, [this](int value)
+        {
+            arm->containerPower = value;
+        });
+        connArmReleasedX = connect(ui->horizontalSlider_x_arm, &QSlider::sliderReleased, this, [this]()
+        {
+            xReleased = true;
+            arm->containerX = (100) * 327.67;
+        });
+        connArmReleasedY = connect(ui->horizontalSlider_y_arm, &QSlider::sliderReleased, this, [this]()
+        {
+            yReleased = true;
+            arm->containerY = (100) * 327.67;
+        });
+        connArmReleasedZ = connect(ui->horizontalSlider_z_arm, &QSlider::sliderReleased, this, [this]()
+        {
+            zReleased = true;
+            arm->containerZ = (100) * 327.67;
+        });
 }
 
 void MainWindow::armControlPhysical1Slot()
@@ -414,6 +449,9 @@ void MainWindow::armControlPhysical1Slot()
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
     disconnect(connArmButtonRelease);
+    disconnect(connArmReleasedX);
+    disconnect(connArmReleasedY);
+    disconnect(connArmReleasedZ);
 
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, this, [this](int value)
@@ -452,6 +490,9 @@ void MainWindow::armControlPhysical2Slot()
     disconnect(connArmPhysicalPower);
     disconnect(connArmPhysicalButton);
     disconnect(connArmButtonRelease);
+    disconnect(connArmReleasedX);
+    disconnect(connArmReleasedY);
+    disconnect(connArmReleasedZ);
 
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, this, [this](int value)
