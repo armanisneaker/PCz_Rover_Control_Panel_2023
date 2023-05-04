@@ -14,6 +14,17 @@ MainWindow::MainWindow(QWidget *parent)
     initializeUi();
 
     startTimers();
+
+    //
+    //podpięcie mapki do robienia cudów
+    mapmodule = new MapModule(this);
+    ui->graphicsView->setScene(mapmodule);
+
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    scale.viewtransform = ui->graphicsView->transform();
+    scale.scale = scale_enum::m1;
 }
 
 MainWindow::~MainWindow()
@@ -657,3 +668,148 @@ void MainWindow::deleteTimers()
     delete joystickPhysicalTimer;
 }
 
+
+void MainWindow::on_pushButtonUnZoom_clicked()
+{
+    //zaczyna od zerowej transformacji
+
+    switch(scale.scale)
+    {
+        case scale_enum::m1:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m10;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("10m");
+            ui->graphicsView->scale(0.1,0.1);
+            break;
+        }
+        case scale_enum::m10:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m50;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.02,0.02);
+            break;
+        }
+        case scale_enum::m50:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m100;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.01,0.01);
+            break;
+        }
+        case scale_enum::m100:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m500;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.005,0.005);
+            break;
+        }
+        case scale_enum::m500:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m1000;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("100m");
+            ui->graphicsView->scale(0.001,0.001);
+            break;
+
+        }
+
+        case scale_enum::m1000:
+        {
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+
+void MainWindow::on_pushButtonZoom_clicked()
+{
+    //zaczyna od zerowej transformacji
+
+
+    switch(scale.scale)
+    {
+
+        case scale_enum::m1:
+        {
+            ui->label_scale->setText("1m");
+            break;
+        }
+        case scale_enum::m10:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m1;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("1m");
+            ui->graphicsView->scale(1,1);
+            break;
+        }
+        case scale_enum::m50:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m10;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("10m");
+            ui->graphicsView->scale(0.1,0.1);
+            break;
+        }
+        case scale_enum::m100:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m50;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.02,0.02);
+            break;
+        }
+        case scale_enum::m500:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m100;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.01,0.01);
+            break;
+        }
+        case scale_enum::m1000:
+        {
+            ui->graphicsView->resetTransform();
+            scale.scale = scale_enum::m500;
+            mapmodule->scale(scale.scale);
+            ui->label_scale->setText("50m");
+            ui->graphicsView->scale(0.005,0.005);
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+}
+
+
+void MainWindow::on_pushButtonSend_clicked()
+{
+    mapmodule->UpdatePosition(ui->lineEditPosXRover->text().toDouble(),ui->lineEditPosYRover->text().toDouble());
+    ui->graphicsView->centerOn(mapmodule->size_of_map/2,mapmodule->size_of_map/2);
+}
+
+
+void MainWindow::on_pushButtonRotate_clicked()
+{
+    mapmodule->rover.rotate(ui->lineEditRotate->text().toInt());
+}

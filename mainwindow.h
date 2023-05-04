@@ -11,6 +11,18 @@
 #include "joystickdirectinput.h"
 #include "ui_mainwindow.h"
 
+#include <string.h>
+#include <QTextCursor>
+#include <QTableWidgetItem>
+#include <QLabel>
+#include <QLayout>
+#include <QMatrix2x2>
+#include <QBitArray>
+#include <QGraphicsItem>
+
+#include "mapmodule.h"
+#include "structures.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -40,6 +52,15 @@ private:
     JoystickWidget* joystickWidget;
     DirectInputJoystick* joystick;
 
+    //
+    MapModule * mapmodule;
+    Navigation navigation;
+    bool isGroupBox6 = false;
+    QPixmap pixmap;
+    QPixmap pixmap2;
+    QPixmap pixmap3;
+    Scale scale;
+    //
 
     QTimer *connectionTimer;
     QTimer *armTimer;
@@ -115,5 +136,12 @@ private slots:
     void driveControlPhysical2Slot();
     void deleteClasses();
     void deleteTimers();
+    void on_pushButton_add_pos_clicked();
+    void on_pushButtonDeletePoint_clicked();
+    void on_pushButtonSend_clicked();
+    void on_pushButtonRotate_clicked();
+    void on_pushButtonZoom_clicked();
+    void on_pushButtonUnZoom_clicked();
+    void on_tableWidget_nav_cellClicked(int row, int column);
 };
 #endif // MAINWINDOW_H

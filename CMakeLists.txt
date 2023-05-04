@@ -28,6 +28,13 @@ set(PROJECT_SOURCES
         joystickwidget.cpp
         joystickdirectinput.h
         joystickdirectinput.cpp
+
+        MapModule.h
+        MapModule.cpp
+        structures.h
+        GPSList.cpp
+        rover_pointer.h
+        rover_pointer.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
