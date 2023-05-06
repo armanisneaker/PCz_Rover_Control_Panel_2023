@@ -117,13 +117,13 @@ void MainWindow::on_horizontalSlider_y_drive_sliderReleased()
 
 void MainWindow::updateUiArm(int containerX, int containerY, int containerZ, int containerPower, bool xReleased, bool yReleased, bool zReleased)
 {
-    if (!xReleased) {
+    if (xReleased) {
         ui->horizontalSlider_x_arm->setValue(containerX / 327.67 - 100);
     }
-    if (!yReleased) {
+    if (yReleased) {
         ui->horizontalSlider_y_arm->setValue(containerY / 327.67 - 100);
     }
-    if (!zReleased) {
+    if (zReleased) {
         ui->horizontalSlider_z_arm->setValue(containerZ / 327.67 - 100);
     }
     ui->horizontalSlider_power_arm->setValue(containerPower);
@@ -506,6 +506,10 @@ void MainWindow::armControlPhysical1Slot()
     disconnect(connArmReleasedY);
     disconnect(connArmReleasedZ);
 
+    xReleased = true;
+    yReleased = true;
+    zReleased = true;
+
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick1AxisXChanged, this, [this](int value)
     {
@@ -546,6 +550,10 @@ void MainWindow::armControlPhysical2Slot()
     disconnect(connArmReleasedX);
     disconnect(connArmReleasedY);
     disconnect(connArmReleasedZ);
+
+    xReleased = true;
+    yReleased = true;
+    zReleased = true;
 
     // Connect joystick signals to their respective slots
     connArmPhysicalX = connect(joystick, &DirectInputJoystick::joystick2AxisXChanged, this, [this](int value)

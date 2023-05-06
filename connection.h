@@ -27,6 +27,7 @@ private:
     const char DEFAULT_VALUE = 0;
 
 
+
 public:
     explicit Connection(QObject *parent = nullptr);
     ~Connection();
