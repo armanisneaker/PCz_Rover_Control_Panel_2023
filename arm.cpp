@@ -79,6 +79,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
         motorSegment2Middle = 3200;
         motorSegment1Bottom = 3200;
         motorJawsPosition = 3200;
+        motorJawsRotation = -motorX+3200;
         break;
     case All:
         motorBase = motorZ + 3200;
