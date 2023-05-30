@@ -11,6 +11,7 @@ public:
     explicit Arm(QObject *parent = nullptr);
 
     QByteArray frame;
+    QByteArray framePoker;
 
     enum ButtonFunction
     {
@@ -33,6 +34,7 @@ public:
 
     ButtonFunctionKey buttonFunctionKeys[6];
     bool calculateSegmentsSpeeds(int x, int y, int z, int power, ButtonFunction buttonFunction, int buttonPressed);
+    void calculatePokerValues();
     int containerX;
     int containerY;
     int containerZ;
@@ -40,6 +42,9 @@ public:
     ButtonFunction activeButtonFunction;
     int buttonPressed;
     static constexpr int32_t joystickCenter = 32767;
+
+    uint16_t pokerAngle;
+    uint16_t pokerPoke;
 
 private:
 
@@ -73,6 +78,7 @@ private:
 public slots:
     void processButtonPressed(int buttonPressedNow);
     void onButtonFunctionIndexChanged(int index, int newIndex);
+
 
 signals:
     void controlVirtualSliders();

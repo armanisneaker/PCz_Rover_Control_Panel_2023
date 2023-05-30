@@ -28,6 +28,8 @@ set(PROJECT_SOURCES
         joystickwidget.cpp
         joystickdirectinput.h
         joystickdirectinput.cpp
+        science.cpp
+        science.h
 
         MapModule.h
         MapModule.cpp

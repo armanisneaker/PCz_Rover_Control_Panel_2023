@@ -10,6 +10,9 @@
     <height>800</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>false</bool>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -35,6 +38,9 @@ QMenuBar
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="toolTipDuration">
+    <number>-32</number>
+   </property>
    <property name="styleSheet">
     <string notr="true">QWidget
 {
@@ -1603,53 +1609,6 @@ QProgressBar::chunk {
       <string>%v</string>
      </property>
     </widget>
-    <widget class="QLCDNumber" name="lcdNumber_rover_speed">
-     <property name="geometry">
-      <rect>
-       <x>364</x>
-       <y>178</y>
-       <width>73</width>
-       <height>73</height>
-      </rect>
-     </property>
-     <property name="smallDecimalPoint">
-      <bool>false</bool>
-     </property>
-     <property name="digitCount">
-      <number>2</number>
-     </property>
-     <property name="segmentStyle">
-      <enum>QLCDNumber::Filled</enum>
-     </property>
-    </widget>
-    <widget class="QDial" name="dial_rover_speed">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>344</x>
-       <y>18</y>
-       <width>113</width>
-       <height>135</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <number>50</number>
-     </property>
-     <property name="tracking">
-      <bool>false</bool>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="wrapping">
-      <bool>false</bool>
-     </property>
-     <property name="notchesVisible">
-      <bool>true</bool>
-     </property>
-    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_4">
     <property name="geometry">
@@ -2262,7 +2221,7 @@ QProgressBar::chunk {
       <x>526</x>
       <y>492</y>
       <width>301</width>
-      <height>285</height>
+      <height>73</height>
      </rect>
     </property>
     <property name="title">
@@ -2274,7 +2233,7 @@ QProgressBar::chunk {
        <x>4</x>
        <y>22</y>
        <width>295</width>
-       <height>375</height>
+       <height>47</height>
       </rect>
      </property>
      <property name="frameShape">
@@ -2316,7 +2275,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <property name="title">
      <string>Poker</string>
     </property>
-    <widget class="QSlider" name="horizontalSlider">
+    <widget class="QSlider" name="horizontalSliderPokerAngle">
      <property name="geometry">
       <rect>
        <x>60</x>
@@ -2328,11 +2287,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <property name="maximum">
       <number>180</number>
      </property>
+     <property name="singleStep">
+      <number>1</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-    <widget class="QSlider" name="horizontalSlider_2">
+    <widget class="QSlider" name="horizontalSliderPokerPoke">
      <property name="geometry">
       <rect>
        <x>60</x>
@@ -2343,6 +2305,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </property>
      <property name="maximum">
       <number>180</number>
+     </property>
+     <property name="singleStep">
+      <number>15</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -2374,7 +2339,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <string>Poke</string>
      </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox">
+    <widget class="QSpinBox" name="spinBoxPokerAngle">
      <property name="geometry">
       <rect>
        <x>232</x>
@@ -2383,8 +2348,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <height>29</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>180</number>
+     </property>
     </widget>
-    <widget class="QSpinBox" name="spinBox_2">
+    <widget class="QSpinBox" name="spinBoxPokerPoke">
      <property name="geometry">
       <rect>
        <x>232</x>
@@ -2393,8 +2361,234 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <height>29</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>180</number>
+     </property>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="groupBox_5">
+    <property name="geometry">
+     <rect>
+      <x>524</x>
+      <y>570</y>
+      <width>305</width>
+      <height>203</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Science</string>
+    </property>
+    <widget class="QLabel" name="label_science_revolver_value">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>86</y>
+       <width>33</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_lid_1">
+     <property name="geometry">
+      <rect>
+       <x>-22</x>
+       <y>42</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Lid 1</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_lid_2">
+     <property name="geometry">
+      <rect>
+       <x>-22</x>
+       <y>64</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Lid 2</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_lid_3">
+     <property name="geometry">
+      <rect>
+       <x>-22</x>
+       <y>88</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Lid 3</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_lid_4">
+     <property name="geometry">
+      <rect>
+       <x>-22</x>
+       <y>112</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Lid 4</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_pump_3">
+     <property name="geometry">
+      <rect>
+       <x>204</x>
+       <y>88</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pump 3</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_pump_4">
+     <property name="geometry">
+      <rect>
+       <x>204</x>
+       <y>112</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pump 4</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_pump_1">
+     <property name="geometry">
+      <rect>
+       <x>204</x>
+       <y>42</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pump 1</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkBox_pump_2">
+     <property name="geometry">
+      <rect>
+       <x>204</x>
+       <y>64</y>
+       <width>105</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Pump 2</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_science_revolver_name">
+     <property name="geometry">
+      <rect>
+       <x>114</x>
+       <y>18</y>
+       <width>65</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Revolver</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_revolver_plus">
+     <property name="geometry">
+      <rect>
+       <x>154</x>
+       <y>46</y>
+       <width>39</width>
+       <height>37</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>+</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton_revolver_minus">
+     <property name="geometry">
+      <rect>
+       <x>98</x>
+       <y>46</y>
+       <width>39</width>
+       <height>37</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>-</string>
+     </property>
+    </widget>
+    <widget class="QDial" name="dial_revolver">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>102</y>
+       <width>93</width>
+       <height>103</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>360</number>
+     </property>
+     <property name="singleStep">
+      <number>1</number>
+     </property>
+     <property name="pageStep">
+      <number>1</number>
+     </property>
+     <property name="wrapping">
+      <bool>true</bool>
+     </property>
+     <property name="notchTarget">
+      <double>45.000000000000000</double>
+     </property>
+     <property name="notchesVisible">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <zorder>groupBox_5</zorder>
+   <zorder>groupBoxArm</zorder>
+   <zorder>groupBoxDrive</zorder>
+   <zorder>groupBox_4</zorder>
+   <zorder>groupBox_2</zorder>
+   <zorder>groupBox_8</zorder>
+   <zorder>groupBox</zorder>
+   <zorder>groupBox_3</zorder>
   </widget>
   <action name="actionMain_Page">
    <property name="text">

@@ -10,6 +10,7 @@
 #include "joystickwidget.h"
 #include "joystickdirectinput.h"
 #include "ui_mainwindow.h"
+#include "science.h"
 
 #include <string.h>
 #include <QTextCursor>
@@ -51,6 +52,8 @@ private:
     Arm* arm;
     JoystickWidget* joystickWidget;
     DirectInputJoystick* joystick;
+    Science science;
+
 
     //
     MapModule * mapmodule;

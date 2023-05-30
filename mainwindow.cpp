@@ -322,7 +322,84 @@ void MainWindow::setupBusinessConnections()
         mapmodule->UpdatePosition(connection->longitude, connection->latitude);
         mapmodule->rover.rotate(connection->azimuth);
     });
+
+    //Poker
+
+    connect(ui->horizontalSliderPokerAngle, &QSlider::valueChanged, this, [this](int value){
+        arm->pokerAngle = value;
+        arm->calculatePokerValues();
+    });
+
+    connect(ui->horizontalSliderPokerPoke, &QSlider::valueChanged, this, [this](int value){
+        arm->pokerPoke = value;
+        arm->calculatePokerValues();
+    });
+
+    //Science
+
+    connect(ui->pushButton_revolver_plus, &QPushButton::clicked, this, [this](){
+        science.changeRevolverPosition(true);
+        //qDebug() << science.revolverPosition;
+        ui->label_science_revolver_value->setText(QString::number(science.revolverPosition));
+        science.calculateScienceValues();
+    });
+    connect(ui->pushButton_revolver_minus, &QPushButton::clicked, this, [this](){
+        science.changeRevolverPosition(false);
+        //qDebug() << science.revolverPosition;
+        ui->label_science_revolver_value->setText(QString::number(science.revolverPosition));
+        science.calculateScienceValues();
+    });
+
+    connect(ui->checkBox_lid_1, &QCheckBox::stateChanged, this, [this](bool value){
+        science.lid1 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_lid_2, &QCheckBox::stateChanged, this, [this](bool value){
+        science.lid2 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_lid_3, &QCheckBox::stateChanged, this, [this](bool value){
+        science.lid3 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_lid_4, &QCheckBox::stateChanged, this, [this](bool value){
+        science.lid4 = value;
+        science.calculateScienceValues();
+    });
+
+    connect(ui->checkBox_pump_1, &QCheckBox::stateChanged, this, [this](bool value){
+        science.pump1 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_pump_2, &QCheckBox::stateChanged, this, [this](bool value){
+        science.pump2 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_pump_3, &QCheckBox::stateChanged, this, [this](bool value){
+        science.pump3 = value;
+        science.calculateScienceValues();
+    });
+    connect(ui->checkBox_pump_4, &QCheckBox::stateChanged, this, [this](bool value){
+        science.pump4 = value;
+        science.calculateScienceValues();
+    });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MainWindow::setupUiConnections()
 {
@@ -414,11 +491,11 @@ void MainWindow::setupUiConnections()
     connect(arm, &Arm::motorJawsClenchChanged, ui->progressBar_motor_jaws_clench, &QProgressBar::setValue);
 
 
-    connect(drive, &Drive::roverSpeedChanged, this, [this](int value){
+    /*connect(drive, &Drive::roverSpeedChanged, this, [this](int value){
         ui->lcdNumber_rover_speed->display(value);
         ui->dial_rover_speed->setValue(value);
         //printToUi(QString::number(value));
-    } );
+    } );*/
     connect(connection, &Connection::frameFailedToBeSent, this, [this](int value){
         //printToUi("Frame failed to be sent: bytes:" + QString::number(value));
     });
@@ -428,11 +505,30 @@ void MainWindow::setupUiConnections()
         ui->lineEditPosYRover->setText(QString::number(connection->latitude, 'f', 10));
         ui->lineEditRotate->setText(QString::number(connection->azimuth));
     });
+
+    //Poker
+
+    connect(ui->horizontalSliderPokerAngle, &QSlider::valueChanged, ui->spinBoxPokerAngle, &QSpinBox::setValue);
+    connect(ui->horizontalSliderPokerPoke, &QSlider::valueChanged, ui->spinBoxPokerPoke, &QSpinBox::setValue);
+
+    connect(ui->spinBoxPokerAngle, &QSpinBox::editingFinished, this, [this](){
+        ui->horizontalSliderPokerAngle->setValue(ui->spinBoxPokerAngle->value());
+    });
+
+    connect(ui->spinBoxPokerPoke, &QSpinBox::editingFinished, this, [this](){
+        ui->horizontalSliderPokerPoke->setValue(ui->spinBoxPokerPoke->value());
+    });
+
+    //Science
+
+    connect(&science, &Science::revolverPositionChanged, this, [this](){
+        ui->dial_revolver->setValue(science.revolverPosition);
+    });
 }
 
 void MainWindow::connectionSlot()
 {
-    connection->createFrame(drive->frame, arm->frame);
+    connection->createFrame(drive->frame, arm->frame, arm->framePoker, science.frame);
 }
 
 void MainWindow::armSlot()

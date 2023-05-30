@@ -42,7 +42,7 @@ public:
     QString currentIP;
 
 public slots:
-    bool createFrame(const QByteArray &frameDrive, const QByteArray &frameArm);
+    bool createFrame(const QByteArray &frameDrive, const QByteArray &frameArm, const QByteArray& framePoker, const QByteArray &frameScience);
     bool sendFrame();
     void setHostAddress(const QString &address);
     void setHostPort(quint16 port);

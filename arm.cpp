@@ -3,6 +3,7 @@
 Arm::Arm(QObject *parent) : QObject(parent)
 {
     frame.QByteArray::clear();
+    framePoker.QByteArray::clear();
     containerX = joystickCenter;
     containerY = joystickCenter;
     containerZ = joystickCenter;
@@ -14,6 +15,12 @@ Arm::Arm(QObject *parent) : QObject(parent)
     powerOnMotors = 0;
     deadzone = 0.25;
     motorX = motorY = motorZ = 0;
+
+    pokerAngle = 0;
+    pokerPoke = 0;
+
+    QDataStream stream(&framePoker, QIODevice::WriteOnly);
+    stream << pokerAngle << pokerPoke;
 }
 
 bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const int power, ButtonFunction buttonFunction, int buttonPressed)
@@ -151,6 +158,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
            prevMotorJawsClench = motorJawsClench;
        }
 
+       //qDebug() << framePoker;
 
     return true;
 }
@@ -181,4 +189,10 @@ void Arm::onButtonFunctionIndexChanged(int index, int newIndex) {
 
     // Emit the signal
     emit buttonFunctionChanged(index);
+}
+
+void Arm::calculatePokerValues()
+{
+    QDataStream stream(&framePoker, QIODevice::WriteOnly);
+    stream << pokerAngle << pokerPoke;
 }

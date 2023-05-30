@@ -34,7 +34,7 @@ Connection::~Connection()
 
 }
 
-bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& frameArm)
+bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& frameArm, const QByteArray& framePoker, const QByteArray& frameScience)
 {
     // Check that the frame has enough space to accommodate the drive and arm frames
     if (frame.size() < 67 + frameArm.size())
@@ -57,6 +57,14 @@ bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& fra
     // Move the stream position to the start of the frameArm data location
     stream.device()->seek(67);
     stream.writeRawData(frameArm.constData(), frameArm.size());
+
+    stream.device()->seek(22);
+    stream.writeRawData(framePoker.constData(), framePoker.size());
+
+    stream.device()->seek(250);
+    stream.writeRawData(frameScience.constData(), frameScience.size());
+
+    qDebug() << frameScience;
 
     emit frameCreated();
     return true;
