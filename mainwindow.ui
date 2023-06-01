@@ -1696,33 +1696,33 @@ QProgressBar::chunk {
      <widget class="QLabel" name="label_18">
       <property name="geometry">
        <rect>
-        <x>14</x>
+        <x>9</x>
         <y>212</y>
-        <width>16</width>
+        <width>79</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>X:</string>
+       <string>Longitude:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_19">
       <property name="geometry">
        <rect>
-        <x>12</x>
+        <x>9</x>
         <y>242</y>
-        <width>16</width>
+        <width>79</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Y:</string>
+       <string>Latitude:</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_add_pos">
       <property name="geometry">
        <rect>
-        <x>144</x>
+        <x>204</x>
         <y>210</y>
         <width>87</width>
         <height>25</height>
@@ -1735,7 +1735,7 @@ QProgressBar::chunk {
      <widget class="QLabel" name="label_22">
       <property name="geometry">
        <rect>
-        <x>242</x>
+        <x>302</x>
         <y>212</y>
         <width>81</width>
         <height>16</height>
@@ -1748,7 +1748,7 @@ QProgressBar::chunk {
      <widget class="QLabel" name="labelChoosenIndex">
       <property name="geometry">
        <rect>
-        <x>242</x>
+        <x>302</x>
         <y>240</y>
         <width>83</width>
         <height>16</height>
@@ -1761,7 +1761,7 @@ QProgressBar::chunk {
      <widget class="QPushButton" name="pushButtonDeletePoint">
       <property name="geometry">
        <rect>
-        <x>144</x>
+        <x>204</x>
         <y>240</y>
         <width>87</width>
         <height>27</height>
@@ -1774,7 +1774,7 @@ QProgressBar::chunk {
      <widget class="QLineEdit" name="lineEditPosX">
       <property name="geometry">
        <rect>
-        <x>34</x>
+        <x>94</x>
         <y>212</y>
         <width>101</width>
         <height>22</height>
@@ -1784,7 +1784,7 @@ QProgressBar::chunk {
      <widget class="QLineEdit" name="lineEditPosY">
       <property name="geometry">
        <rect>
-        <x>34</x>
+        <x>94</x>
         <y>244</y>
         <width>101</width>
         <height>22</height>
@@ -2284,14 +2284,26 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <height>18</height>
       </rect>
      </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
      <property name="maximum">
       <number>180</number>
      </property>
      <property name="singleStep">
       <number>1</number>
      </property>
+     <property name="pageStep">
+      <number>1</number>
+     </property>
+     <property name="value">
+      <number>130</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QSlider" name="horizontalSliderPokerPoke">
@@ -2307,7 +2319,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <number>180</number>
      </property>
      <property name="singleStep">
-      <number>15</number>
+      <number>180</number>
+     </property>
+     <property name="pageStep">
+      <number>30</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -2351,6 +2366,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <property name="maximum">
       <number>180</number>
      </property>
+     <property name="value">
+      <number>130</number>
+     </property>
     </widget>
     <widget class="QSpinBox" name="spinBoxPokerPoke">
      <property name="geometry">
@@ -2376,7 +2394,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
      </rect>
     </property>
     <property name="title">
-     <string>Science</string>
+     <string>Science Mission</string>
     </property>
     <widget class="QLabel" name="label_science_revolver_value">
      <property name="geometry">

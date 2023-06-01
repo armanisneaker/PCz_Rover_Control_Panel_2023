@@ -16,7 +16,7 @@ Arm::Arm(QObject *parent) : QObject(parent)
     deadzone = 0.25;
     motorX = motorY = motorZ = 0;
 
-    pokerAngle = 0;
+    pokerAngle = 130;
     pokerPoke = 0;
 
     QDataStream stream(&framePoker, QIODevice::WriteOnly);
