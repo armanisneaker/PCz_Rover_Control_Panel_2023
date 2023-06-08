@@ -25,6 +25,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     scale.viewtransform = ui->graphicsView->transform();
     scale.scale = scale_enum::m1;
+
+
+
+    //Wczytanie punktów GPS
+
+    std::fstream file;
+    file.open("./GPS.txt", std::ios::in );
+        std::string line;
+        while (file.eof() == false) {
+            std::string longi;
+            file >> longi;
+            std::string lati;
+            file >> lati;
+                    double latitude = std::atof(lati.c_str());
+                    double longitude = std::atof(longi.c_str());
+                    addGpsPoint(latitude, longitude);
+                }
+    // Wczytywanie punków z astronauty
 }
 
 MainWindow::~MainWindow()
@@ -503,6 +521,8 @@ void MainWindow::setupUiConnections()
         ui->graphicsView->centerOn(mapmodule->size_of_map/2,mapmodule->size_of_map/2);
         ui->lineEditPosXRover->setText(QString::number(connection->longitude, 'f', 10));
         ui->lineEditPosYRover->setText(QString::number(connection->latitude, 'f', 10));
+        /*ui->lineEditPosXRover->setText(QString::number(38.4067179, 'f', 10));
+        ui->lineEditPosYRover->setText(QString::number(-110.7919572, 'f', 10));*/
         ui->lineEditRotate->setText(QString::number(connection->azimuth));
     });
 
@@ -958,3 +978,21 @@ void MainWindow::on_pushButtonRotate_clicked()
 {
     mapmodule->rover.rotate(ui->lineEditRotate->text().toInt());
 }
+
+
+void MainWindow::on_pushButton_clicked()
+{
+    std::fstream file;
+    file.open("./astro.txt", std::ios::in );
+        std::string line;
+        while (file.eof() == false) {
+            std::string longi;
+            file >> longi;
+            std::string lati;
+            file >> lati;
+                    double latitude = std::atof(lati.c_str());
+                    double longitude = std::atof(longi.c_str());
+                    addGpsPoint(latitude, longitude);
+                }
+}
+

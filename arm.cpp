@@ -55,18 +55,21 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
     case None:
         break;
     case First:
+        motorBase = motorZ + 3200;
         motorSegment1Bottom = motorY+3200;
         motorJawsPosition = 3200;
         motorJawsClench = 3200;
         motorSegment2Middle = 3200;
         break;
     case Second:
+        motorBase = motorZ + 3200;
         motorSegment2Middle = motorY+3200;
         motorSegment1Bottom = 3200;
         motorJawsPosition = 3200;
         motorJawsClench = 3200;
         break;
     case Third:
+        motorBase = motorZ + 3200;
         motorJawsPosition = motorY+3200;
         motorJawsClench = 3200;
         motorSegment2Middle = 3200;
@@ -118,7 +121,7 @@ bool Arm::calculateSegmentsSpeeds(const int x, const int y, const int z, const i
             motorJawsClench = 3200;
             break;
         }
-        motorJawsRotation = -motorX+3200;
+        //motorJawsRotation = -motorX+3200;
         break;
     default:
         break;

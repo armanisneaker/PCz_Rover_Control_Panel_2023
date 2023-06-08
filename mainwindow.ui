@@ -1677,6 +1677,12 @@ QProgressBar::chunk {
       <property name="autoScroll">
        <bool>true</bool>
       </property>
+      <property name="dragEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
       <column>
        <property name="text">
         <string>ID</string>
@@ -1902,6 +1908,19 @@ QProgressBar::chunk {
       </property>
       <property name="text">
        <string>Longitude Latitude</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>454</x>
+        <y>234</y>
+        <width>153</width>
+        <height>43</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load Astro</string>
       </property>
      </widget>
     </widget>

@@ -32,6 +32,14 @@ void MainWindow::on_pushButton_add_pos_clicked()
     ui->graphicsView->centerOn(500000,500000);
     mapmodule->addPoint(navigation.pos_X[navigation.index_number],navigation.pos_Y[navigation.index_number]);
     navigation.index_number++;
+
+    std::fstream file;
+    file.open("./astro.txt", std::ios::app);
+    file << ui->lineEditPosY->text().toDouble();
+    file << " ";
+    file << ui->lineEditPosX->text().toDouble();
+    file << std::endl;
+    file.close();
 }
 
 void MainWindow::on_tableWidget_nav_cellClicked(int row, int column)
@@ -70,4 +78,30 @@ void MainWindow::on_pushButtonDeletePoint_clicked()
     }
 
     mapmodule->deleteCurrentPoint();
+}
+
+void MainWindow::addGpsPoint(double longitude, double latitude)
+{
+    navigation.pos_X.push_back(longitude);
+    navigation.pos_Y.push_back(latitude);
+    ui->tableWidget_nav->insertRow(ui->tableWidget_nav->rowCount());
+
+    navigation.itemID.push_back(new QTableWidgetItem);
+    navigation.itemRow.push_back(new QTableWidgetItem);
+    navigation.itemColumn.push_back(new QTableWidgetItem);
+
+    navigation.itemID[navigation.index_number]->setText(QString::number(navigation.index_number+1));
+    navigation.itemRow[navigation.index_number]->setText(QString::number(navigation.pos_X[navigation.index_number],'g',12));
+    navigation.itemColumn[navigation.index_number]->setText(QString::number(navigation.pos_Y[navigation.index_number],'g',12));
+
+    //qDebug() << "Precision: " << navigation.pos_X[navigation.index_number];
+
+
+    ui->tableWidget_nav->setItem( navigation.index_number, 0, navigation.itemID[navigation.index_number]);
+    ui->tableWidget_nav->setItem( navigation.index_number, 1, navigation.itemRow[navigation.index_number]);
+    ui->tableWidget_nav->setItem( navigation.index_number, 2, navigation.itemColumn[navigation.index_number]);
+
+    ui->graphicsView->centerOn(500000,500000);
+    mapmodule->addPoint(navigation.pos_X[navigation.index_number],navigation.pos_Y[navigation.index_number]);
+    navigation.index_number++;
 }

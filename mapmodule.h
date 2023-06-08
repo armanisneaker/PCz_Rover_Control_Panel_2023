@@ -63,7 +63,7 @@ private:
     scale_enum scale_factor = scale_enum::m1;
     int choosen_index = 0;
 
-    QString main_path =  "C:/Users/Armani/Documents/GitHub/PCz_Rover_Control_Panel_2023/images/";
+    QString main_path =  "./images/";
     QString redPointPath = main_path + ("redPoint.png");
     QString greenPointPath = main_path + ("greenPoint.png");
     QString arrowPath = main_path + ("arrow.png");

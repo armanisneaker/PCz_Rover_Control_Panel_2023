@@ -64,7 +64,7 @@ bool Connection::createFrame(const QByteArray& frameDrive, const QByteArray& fra
     stream.device()->seek(26);
     stream.writeRawData(frameScience.constData(), frameScience.size());
 
-    qDebug() << frame;
+    //qDebug() << frameScience;
 
     emit frameCreated();
     return true;

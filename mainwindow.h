@@ -20,6 +20,7 @@
 #include <QMatrix2x2>
 #include <QBitArray>
 #include <QGraphicsItem>
+#include <fstream>
 
 #include "mapmodule.h"
 #include "structures.h"
@@ -41,6 +42,7 @@ public:
     void updateUiArm(int containerX, int containerY, int containerZ, int containerPower, bool xReleased, bool yReleased, bool zReleased);
     void updateUiDrive(int containerX, int containerY, int containerPower);
     void printToUi(QString text);
+    void addGpsPoint(double longitude, double latitude);
 
 
 
@@ -149,5 +151,6 @@ private slots:
     void on_pushButtonZoom_clicked();
     void on_pushButtonUnZoom_clicked();
     void on_tableWidget_nav_cellClicked(int row, int column);
+    void on_pushButton_clicked();
 };
 #endif // MAINWINDOW_H
